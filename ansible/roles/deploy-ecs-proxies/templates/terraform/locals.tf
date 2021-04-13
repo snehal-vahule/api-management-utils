@@ -11,6 +11,7 @@ locals {
 
   common_tags = {
     source = "terraform"
+    project = var.service_id
     api-service = var.service_id
     api-environment = var.apigee_environment
     api-namespaced-name = var.namespaced_name
