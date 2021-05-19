@@ -3,6 +3,7 @@ parameters:
   - name: product_display_name
   - name: product_description
   - name: service_name
+  - name: stage_name
   - name: short_service_name
   - name: fully_qualified_service_name
   - name: apigee_environment
@@ -272,10 +273,10 @@ steps:
         headers: "apikey: $(MONITORING_API_KEY)"
         ${{ if eq(parameters.apigee_environment, 'prod') }}:
           url: "https://api.service.nhs.uk/monitoring-sd/service"
-          body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping", "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx_with_api_key https://api.service.nhs.uk/${{ parameters.service_base_path }}/_status"  ] } }'
+          body: '{ "${{ parameters.service_name }}": { "${{ parameters.stage_name }}": [ "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping", "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx_with_api_key https://api.service.nhs.uk/${{ parameters.service_base_path }}/_status"  ] } }'
         ${{ if not(eq(parameters.apigee_environment, 'prod')) }}:
           url: "https://internal-dev.api.service.nhs.uk/monitoring-sd/service"
-          body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping", "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx_with_api_key https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_status"  ] } }'
+          body: '{ "${{ parameters.service_name }}": { "${{ parameters.stage_name }}": [ "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping", "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx_with_api_key https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_status"  ] } }'
 
   - ${{ each post_deploy_step in parameters.post_deploy }}:
     - ${{ post_deploy_step }}
