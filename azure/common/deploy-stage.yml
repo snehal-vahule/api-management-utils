@@ -226,6 +226,7 @@ stages:
                     short_service_name: ${{ parameters.short_service_name }}
                     fully_qualified_service_name: $(FULLY_QUALIFIED_SERVICE_NAME)
                     service_base_path: $(SERVICE_BASE_PATH)
+                    stage_name: ${{ parameters.stage_name }}
                     jinja_templates: ${{ parameters.jinja_templates }}
                     apigee_environment: ${{ parameters.environment }}
                     apigee_organization: ${{ parameters.apigee_organization }}
