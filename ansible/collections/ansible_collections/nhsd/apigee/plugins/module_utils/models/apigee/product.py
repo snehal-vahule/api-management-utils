@@ -58,6 +58,12 @@ class ApigeeProduct(pydantic.BaseModel):
     quotaTimeUnit: typing.Literal["minute", "hour"]
     scopes: typing.List[str]
 
+    @pydantic.root_validator
+    def override_approval_type_for_prod(cls, values):
+        if "prod" in values["environments"]:
+            values["approvalType"] = "manual"
+        return values
+
     @pydantic.validator("environments", "scopes", "proxies")
     def sorted(cls, v):
         return sorted(v)
