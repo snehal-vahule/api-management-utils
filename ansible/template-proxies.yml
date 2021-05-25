@@ -19,7 +19,6 @@
     DEPLOYED_VERSION: "{{ lookup('env', 'DEPLOYED_VERSION') }}"
     RELEASE_RELEASEID: "{{ lookup('env', 'RELEASE_RELEASEID') }}"
     SOURCE_COMMIT_ID: "{{ lookup('env', 'SOURCE_COMMIT_ID') }}"
-    HOSTED_TARGET_CONNECTION_PATH_SUFFIX: "{{ lookup('env', 'HOSTED_TARGET_CONNECTION_PATH_SUFFIX') }}"
     HOSTED_TARGET_CONNECTION: |
           <SSLInfo>
             <Enabled>true</Enabled>
@@ -27,8 +26,7 @@
           <LoadBalancer>
             <Server name="hosted-apis"/>
           </LoadBalancer>
-          <Path>/{{ service_id }}{{ '-' + pr_number if pr_number else '' }}{{ HOSTED_TARGET_CONNECTION_PATH_SUFFIX }}</Path>
-    HOSTED_TARGET_HEALTHCHECK_SUFFIX: "{{ lookup('env', 'HOSTED_TARGET_HEALTHCHECK_SUFFIX') | default('/_status', True) }}"
+          <Path>/{{ service_id }}{{ '-' + pr_number if pr_number else '' }}{{ HOSTED_TARGET_CONNECTION_PATH_SUFFIX | default('') }}</Path>
     HOSTED_TARGET_HEALTHCHECK: |
       <SSLInfo>
         <Enabled>true</Enabled>
@@ -36,7 +34,7 @@
       <LoadBalancer>
         <Server name="hosted-apis"/>
       </LoadBalancer>
-      <Path>/{{ service_id }}{{ '-' + pr_number if pr_number else '' }}{{ HOSTED_TARGET_HEALTHCHECK_SUFFIX }}</Path>
+      <Path>/{{ service_id }}{{ '-' + pr_number if pr_number else '' }}{{ HOSTED_TARGET_HEALTHCHECK_SUFFIX | default('/_status') }}</Path>
    
 
   roles:
