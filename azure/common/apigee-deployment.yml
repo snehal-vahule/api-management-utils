@@ -115,6 +115,9 @@ parameters:
       - pre_deploy
       - post_deploy
       - make_spec_visible
+      - secret_file_ids
+      - secret_ids
+      - config_ids
   - name: _scoped_step_list_vars
     type: object
     displayName: Subset of scoped pipeline variables that are of type stepList

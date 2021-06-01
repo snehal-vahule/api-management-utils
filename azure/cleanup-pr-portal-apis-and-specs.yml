@@ -67,7 +67,7 @@ jobs:
       - bash: |
           export APIGEE_ORGANIZATION="nhsd-nonprod"
           export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
-          export retain_hours=72
+          export retain_hours=12
           ANSIBLE_FORCE_COLOR=yes make -C ansible remove-old-auto-apps
         displayName: "cleanup old auto apps"
 

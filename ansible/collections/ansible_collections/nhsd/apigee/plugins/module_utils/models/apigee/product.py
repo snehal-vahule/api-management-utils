@@ -1,5 +1,6 @@
 import typing
 import pydantic
+import os
 
 
 def _literal_name(class_):
@@ -57,6 +58,14 @@ class ApigeeProduct(pydantic.BaseModel):
     quotaInterval: str
     quotaTimeUnit: typing.Literal["minute", "hour"]
     scopes: typing.List[str]
+
+    @pydantic.root_validator
+    def override_approval_type_for_prod(cls, values):
+        manual_approval_exceptions = ["canary-api-prod"]
+        if "prod" in values["environments"]:
+            if values["approvalType"] == "auto" and not values["name"] in manual_approval_exceptions:
+                values["approvalType"] = "manual"
+        return values
 
     @pydantic.validator("environments", "scopes", "proxies")
     def sorted(cls, v):
