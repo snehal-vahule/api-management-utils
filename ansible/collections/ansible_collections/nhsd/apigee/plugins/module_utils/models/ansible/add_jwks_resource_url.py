@@ -24,7 +24,7 @@ def default_jwks_resource_url(environment=None, app_id=None):
     if app_id is None:
         global _app_id
         app_id = _app_id
-    return f"https://raw.githubusercontent.com/NHSDigital/identity-service-jwks/main/jwks/{environment}/{app_id}.json"
+    return f"https://nhsdigital.github.io/identity-service-jwks/jwks/{environment}/{app_id}.json"
 
 
 class AddJwksResourceUrlToApp(pydantic.BaseModel):
