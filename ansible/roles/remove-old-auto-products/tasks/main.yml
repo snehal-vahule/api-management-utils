@@ -1,0 +1,28 @@
+
+- name: "get product"
+  uri:
+    url: "{{ products_uri }}?expand=true"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    return_content: yes
+    timeout: 120
+  register: get_products
+
+- name: filter prodcuts
+  set_fact:
+    auto_products: "{{ get_products.json.apiProduct | selectattr('name', 'match', '^apim-auto-.*')  | selectattr('createdAt', 'le', (min_timestamp|int)) }}"
+
+- debug:
+    msg: "{{ auto_products | map(attribute='name') | list }}"
+
+- name: remove product
+  uri:
+    url: "{{ products_uri }}/{{ product.name | urlencode }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    method: DELETE
+  changed_when: yes
+  loop: "{{ auto_products }}"
+  loop_control:
+    loop_var: product
+    label: "{{ product.name }}"
