@@ -75,6 +75,9 @@ remove-old-pr-portal-apis:
 remove-old-auto-apps:
 	@poetry run ansible-playbook -i local remove-old-auto-apps.yml
 
+remove-old-auto-products:
+	@poetry run ansible-playbook -i local remove-old-auto-products.yml
+
 remove-old-pr-specs:
 	@poetry run ansible-playbook -i local remove-old-pr-specs.yml
 
