@@ -254,11 +254,13 @@ steps:
 
   - bash: |
       echo '${{ replace(parameters.stage_name, '_', '-') }}'
+      echo '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@${{ replace(parameters.stage_name, '_', '-') }}=http_2xx https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
     displayName: Set monitoring envirionment
 
   - ${{ if parameters.enable_monitoring }}:
       - bash: |
           echo '${{ replace(parameters.stage_name, '_', '-') }}'
+          echo '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@${{ replace(parameters.stage_name, '_', '-') }}=http_2xx https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
         displayName: Set monitoring envirionment
 
       # - template: '../components/curl.yml'
