@@ -252,18 +252,26 @@ steps:
       fi
     displayName: 'Deploy Proxy, Product and Spec'
 
+  - bash: |
+      echo '${{ replace(parameters.stage_name, '_', '-') }}'
+    displayName: Set monitoring envirionment
+
   - ${{ if parameters.enable_monitoring }}:
-      - template: '../components/curl.yml'
-        parameters:
-          display_name: Add monitoring endpoints          
-          method: POST
-          headers: "apikey: $(MONITORING_API_KEY)"
-          ${{ if eq(parameters.apigee_environment, 'prod') }}:
-            url: "https://api.service.nhs.uk/monitoring-sd/service"
-            body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@${{ replace(parameters.stage_name, '_', '-') }}=http_2xx https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
-          ${{ if not(eq(parameters.apigee_environment, 'prod')) }}:
-            url: "https://internal-dev.api.service.nhs.uk/monitoring-sd/service"
-            body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@${{ replace(parameters.stage_name, '_', '-') }}=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
+      - bash: |
+          echo '${{ replace(parameters.stage_name, '_', '-') }}'
+        displayName: Set monitoring envirionment
+
+      # - template: '../components/curl.yml'
+      #   parameters:
+      #     display_name: Add monitoring endpoints          
+      #     method: POST
+      #     headers: "apikey: $(MONITORING_API_KEY)"
+      #     ${{ if eq(parameters.apigee_environment, 'prod') }}:
+      #       url: "https://api.service.nhs.uk/monitoring-sd/service"
+      #       body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@${{ replace(parameters.stage_name, '_', '-') }}=http_2xx https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
+      #     ${{ if not(eq(parameters.apigee_environment, 'prod')) }}:
+      #       url: "https://internal-dev.api.service.nhs.uk/monitoring-sd/service"
+      #       body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@${{ replace(parameters.stage_name, '_', '-') }}=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
 
   - ${{ if parameters.enable_status_monitoring  }}:
      - template: '../components/curl.yml'
