@@ -254,9 +254,9 @@ steps:
 
   - ${{ if or(parameters.enable_monitoring, parameters.enable_status_monitoring) }}:
     - bash: |
-        echo 'Setting stage name as snake case for monitoring'
+        echo "Setting stage name as snake case for monitoring"
         export MONITORING_STAGE_NAME="${{ replace(parameters.stage_name, '_', '-') }}"
-        echo 'MONITORING_STAGE_NAME=${MONITORING_STAGE_NAME}'
+        echo "MONITORING_STAGE_NAME=${MONITORING_STAGE_NAME}"
         echo "##vso[task.setvariable variable=MONITORING_STAGE_NAME]$MONITORING_STAGE_NAME"
       displayName: 'Setting MONITORING_STAGE_NAME'
 
