@@ -6,12 +6,14 @@ purge_incorrect_env_vars.py
 Takes data from monitoring and value to be removed, and removes offending entires.
 
 Usage:
-  purge_incorrect_env_vars.py [-v <value> | --value=<value>]
+  purge_incorrect_env_vars.py [-m <map_name> | --map_name=<map_name>] [-e <entry_name> | --entry_name=<entry_name>] [-v <value> | --value=<value>]
   purge_incorrect_env_vars.py (-h | --help)
 
 Options:
-  -h --help                        Show this screen.
-  -v <value> | --value=<value>     String value to be removed
+  -h --help                                     Show this screen.
+  -m <map_name> | --map_name=<map_name>         Name of Apigee key-value map to edit
+  -e <entry_name> | --entry_name=<entry_name>   Name of KVM entry to edit
+  -v <value> | --value=<value>                  String value to be removed
 """
 
 import json
@@ -32,12 +34,11 @@ def delete_offending_entires(json_data, offending_str):
 
 def main(args):
     input_value = str(args["--value"])
+    map_name = str(args["--map_name"])
+    entry_name = str(args["--entry_name"])
 
-    
     org_name = "nhsd-nonprod"
     env_name = "internal-dev"
-    map_name = "monitoring-sd-service"
-    entry_name = "entries"
     url = f"https://api.enterprise.apigee.com/v1/organizations/{org_name}/environments/{env_name}/keyvaluemaps/{map_name}/entries/{entry_name}"
     auth = f"Bearer {TOKEN}"
     resp = requests.get(url, headers = {"Authorization": auth})
