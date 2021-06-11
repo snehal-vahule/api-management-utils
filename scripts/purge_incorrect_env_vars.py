@@ -23,11 +23,14 @@ from docopt import docopt
 def delete_offending_entires(json_data, offending_str):
 	for api in json_data:
 		for env in json_data[api]:
+				to_keep = []
 				for line in json_data[api][env]:
-					if offending_str in line:
-						print(line)        
-
-
+						if offending_str not in line:
+								to_keep.append(line)
+				#print(to_keep)
+				json_data[api][env] = to_keep
+	return json_data
+            
 def main(args):
     input_value = str(args["--value"])
     map_name = str(args["--map_name"])
@@ -44,7 +47,9 @@ def main(args):
     json_data = json.loads(resp.text).get('value')
     json_data = json.loads(json_data)
 
-    delete_offending_entires(json_data, input_value)
+    new_json_data = delete_offending_entires(json_data, input_value)
+
+    print(new_json_data)
 
 
 if __name__ == "__main__":
