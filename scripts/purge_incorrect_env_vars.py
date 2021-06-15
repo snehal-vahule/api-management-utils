@@ -39,13 +39,13 @@ def find_offending_entires(json_data, offending_str):
 	return json_data
 
 def post_new_data(new_json_data):
-     url = f"https://api.enterprise.apigee.com/v1/organizations/{org_name}/environments/{env_name}/keyvaluemaps/{map_name}/entries/{entry_name}"
-     headers_i = {"Authorization": auth, "Content-Type": "application/json"}  
-     data_i = '{"name": "entries", "value": ""}'
+    url = f"https://api.enterprise.apigee.com/v1/organizations/{org_name}/environments/{env_name}/keyvaluemaps/{map_name}/entries/{entry_name}"
 
-     post_new_json_data = requests.post(url, data = data_i, headers = headers_i)
+    format_new_json = {"name": entry_name, "value": json.dumps(new_json_data)}
 
-     print(post_new_json_data.text)
+    post_new_json_data = requests.post(url, json=format_new_json, headers=auth)
+
+    print(post_new_json_data.text)
             
 def main(args):
     global map_name, entry_name, token, check_mode
@@ -58,13 +58,12 @@ def main(args):
     global org_name, env_name, auth
     org_name = "nhsd-nonprod"
     env_name = "internal-dev"
-    auth = f"Bearer {token}"
+    auth = {"Authorization": f"Bearer {token}"}
 
     url = f"https://api.enterprise.apigee.com/v1/organizations/{org_name}/environments/{env_name}/keyvaluemaps/{map_name}/entries/{entry_name}"
-    resp = requests.get(url, headers = {"Authorization": auth})
+    resp = requests.get(url, headers=auth)
 
-    json_data = json.loads(resp.text).get('value')
-    json_data = json.loads(json_data)
+    json_data = json.loads(json.loads(resp.text).get('value'))
 
     new_json_data = find_offending_entires(json_data, input_value)
 
