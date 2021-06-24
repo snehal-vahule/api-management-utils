@@ -37,4 +37,4 @@
     - debug:
         msg: "undeploy failed. retrying..."
 
-    - include_task: undeploy-revision.yml
+    - include_tasks: undeploy-revision.yml
