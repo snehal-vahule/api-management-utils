@@ -51,6 +51,10 @@
 
     - name: undeploy revisions
       include_tasks: undeploy-revision.yml
+      register: undeploy-revision-result
+      retries: 3 # Avoid intermitent Apigee failures
+      delay: 10
+      until: undeploy-revision-result is not failed
       loop: "{{ get_api_revisions.json }}"
       loop_control:
         loop_var: "revision"
