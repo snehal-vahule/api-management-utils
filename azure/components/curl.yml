@@ -3,6 +3,7 @@ parameters:
     values:
       - POST
       - GET
+      - DELETE
   - name: url
   - name: headers
     default: ''
