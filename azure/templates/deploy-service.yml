@@ -252,7 +252,7 @@ steps:
       fi
     displayName: 'Deploy Proxy, Product and Spec'
 
-  - ${{ if or(parameters.enable_monitoring, parameters.enable_status_monitoring) }}:
+  - ${{ if or(parameters.enable_monitoring, parameters.enable_status_monitoring, not(parameters.enable_status_monitoring)) }}:
     - bash: |
         echo "Setting stage name as snake case for monitoring"
         export MONITORING_STAGE_NAME="${{ replace(parameters.stage_name, '_', '-') }}"
