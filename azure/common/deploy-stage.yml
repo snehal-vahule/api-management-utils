@@ -98,12 +98,13 @@ stages:
 
                 - task: DownloadPipelineArtifact@2
                   inputs:
-                    source: "specific"
+                    source: specific
                     project: $(resources.pipeline.build_pipeline.projectID)
                     pipeline: $(resources.pipeline.build_pipeline.pipelineID)
                     preferTriggeringPipeline: true
-                    runVersion: "latestFromBranch"
-                    runBranch: $(Build.SourceBranch)
+                    runVersion: specific
+                    runBranch: $(resources.pipeline.build_pipeline.sourceBranch)
+                    runId: $(resources.pipeline.build_pipeline.runID)
                     path: "$(Pipeline.Workspace)/s/${{ parameters.service_name }}"
 
                 - bash: |
