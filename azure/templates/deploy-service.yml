@@ -287,6 +287,7 @@ steps:
           echo do nothing
         else
           echo "##vso[task.setvariable variable=enable_ping_monitoring]true"
+        fi
       else
         echo "##vso[task.setvariable variable=enable_ping_monitoring]false"
       fi
