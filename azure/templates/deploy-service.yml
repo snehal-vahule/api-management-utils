@@ -258,12 +258,19 @@ steps:
       if [[ "${{ parameters.apigee_environment }}" == "prod" ]]; then
         export status_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(MONITORING_API_KEY)" https://api.service.nhs.uk/${{ parameters.service_base_path }}/_status`
         export ping_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(MONITORING_API_KEY)" https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping`
+        echo service_base_path = ${{ parameters.service_base_path }}
+        echo _status_response = status_endpoint_response
+        echo _ping_response = ping_endpoint_response
       else
         export status_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(MONITORING_API_KEY)" https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_status`
         export ping_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(MONITORING_API_KEY)" https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping`
+        echo service_base_path = ${{ parameters.service_base_path }}
+        echo _status_response = status_endpoint_response
+        echo _ping_reponse = ping_endpoint_response
       fi
       
       if [[ "${{ parameters.fully_qualified_service_name }}" == *"-pr-"* ]]; then
+        echo ${{ parameters.fully_qualified_service_name }}
         export is_pull_request=true
       fi
 
