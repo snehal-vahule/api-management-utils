@@ -265,8 +265,8 @@ steps:
         export status_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(MONITORING_API_KEY)" https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_status`
         export ping_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(MONITORING_API_KEY)" https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping`
         echo service_base_path = ${{ parameters.service_base_path }}
-        echo _status_response = status_endpoint_response
-        echo _ping_reponse = ping_endpoint_response
+        echo _status_response = $(status_endpoint_response)
+        echo _ping_reponse = $(ping_endpoint_response)
       fi
       
       if [[ "${{ parameters.fully_qualified_service_name }}" == *"-pr-"* ]]; then
@@ -276,7 +276,8 @@ steps:
 
       if [[ $status_endpoint_response == "200" ]]; then
         if [[ $is_pull_request ]]; then
-          echo do nothing
+          echo status endpoint is present however we dont monitor pull requests
+          echo "##vso[task.setvariable variable=enable_status_monitoring]false"
         else
           echo "##vso[task.setvariable variable=enable_status_monitoring]true"
         fi
@@ -291,7 +292,8 @@ steps:
 
       if [[  $ping_endpoint_response == "200" ]]; then
         if [[ $is_pull_request ]]; then
-          echo do nothing
+          echo is pull request
+          echo "##vso[task.setvariable variable=enable_ping_monitoring]false
         else
           echo "##vso[task.setvariable variable=enable_ping_monitoring]true"
         fi
