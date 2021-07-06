@@ -314,7 +314,6 @@ steps:
 
   - template: '../components/set-monitoring.yml'
     parameters:
-      display_name: Set monitoring         
       enable_status_monitoring: $(enable_status_monitoring)
       enable_ping_monitoring: $(enable_ping_monitoring)
 
