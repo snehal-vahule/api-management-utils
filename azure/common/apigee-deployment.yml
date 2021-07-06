@@ -122,6 +122,8 @@ parameters:
       - secret_file_ids
       - secret_ids
       - config_ids
+      - set_status_monitoring
+      - set_ping_monitoring
   - name: _scoped_step_list_vars
     type: object
     displayName: Subset of scoped pipeline variables that are of type stepList
