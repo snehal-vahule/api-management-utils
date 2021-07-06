@@ -296,17 +296,9 @@ steps:
 
     displayName: 'Check _ping and _status endpoints'
 
-  # - ${{ if parameters.enable_monitoring }}:
-  #   - bash: |
-  #       echo "##vso[task.setvariable variable=enable_ping_monitoring]true"
-
   - ${{ if not(parameters.enable_monitoring) }}:
     - bash: |
         echo "##vso[task.setvariable variable=enable_ping_monitoring]false"
-
-  # - ${{ if parameters.enable_status_monitoring }}:
-  #   - bash: | 
-  #       echo "##vso[task.setvariable variable=enable_status_monitoring]true"
 
   - ${{ if not(parameters.enable_status_monitoring) }}:
     - bash: | 
