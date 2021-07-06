@@ -298,7 +298,7 @@ steps:
 
   - ${{ if not(parameters.enable_monitoring) }}:
     - bash: |
-        echo "##vso[task.setvariable variable=enable_ping_monitoring]false"
+        echo "##vso[task.setvariable variable=set_ping_monitoring]false"
 
   - ${{ if not(parameters.enable_status_monitoring) }}:
     - bash: | 
