@@ -292,18 +292,13 @@ steps:
           echo "##vso[task.setvariable variable=set_status_monitoring]true"
         fi
       else
-        if [[ $is_pull_request ]]; then
-          echo "WARNING: Please add a _status endpoit to your proxy before releasing or your release will fail. Or use the flag 'enable_status_monitoring=false' if your API don't support _status healthcheck"
+        if [[ "${{ not(parameters.enable_status_monitoring) }}" == "true" ]]; then
+          echo "_status endpoint monitoring is disabled"
           echo "##vso[task.setvariable variable=set_status_monitoring]false"
         else
-          if [[ "${{ not(parameters.enable_status_monitoring) }}" == "true" ]]; then
-            echo "_status endpoint monitoring is disabled"
-            echo "##vso[task.setvariable variable=set_status_monitoring]false"
-          else
-            "ERROR: Your proxy dont have a _status endpoint therefore we can't monitor this proxy therefore it should not be released"
-            exit 1
-          fi
-        fi
+          "ERROR: Your proxy dont have a _status endpoint therefore we can't monitor this proxy therefore it should not be released"
+          exit 1
+        fi  
       fi
 
       if [[ $(ping_endpoint_response) == "200" ]]; then
@@ -315,17 +310,12 @@ steps:
           echo "##vso[task.setvariable variable=set_ping_monitoring]true"
         fi
       else
-        if [[ $is_pull_request ]]; then
-          echo "WARNING: Please add a _ping endpoit to your proxy before releasing or your release will fail."
+        if [[ "${{ not(parameters.enable_monitoring) }}" == "true" ]]; then
+          echo "_ping endpoint monitoring is disabled"
           echo "##vso[task.setvariable variable=set_ping_monitoring]false"
         else
-          if [[ "${{ not(parameters.enable_monitoring) }}" == "true" ]]; then
-            echo "_ping endpoint monitoring is disabled"
-            echo "##vso[task.setvariable variable=set_ping_monitoring]false"
-          else
-            "ERROR: Your proxy dont have a _ping endpoint therefore we can't monitor this proxy therefore it should not be released"
-            exit 1
-          fi
+          "ERROR: Your proxy dont have a _ping endpoint therefore we can't monitor this proxy therefore it should not be released"
+          exit 1
         fi
       fi
 
@@ -336,14 +326,24 @@ steps:
         echo "##vso[task.setvariable variable=set_ping_monitoring]false"
       displayName: Override Set ping monitoring
 
+  - ${{ if parameters.enable_monitoring }}:
+    - bash: |
+        echo "##vso[task.setvariable variable=set_ping_monitoring]true"
+      displayName: Override Set ping monitoring
+
   - ${{ if not(parameters.enable_status_monitoring) }}:
     - bash: | 
         echo "##vso[task.setvariable variable=set_status_monitoring]false"
       displayName: Override Set status monitoring
 
+  - ${{ if parameters.enable_status_monitoring }}:
+    - bash: | 
+        echo "##vso[task.setvariable variable=set_status_monitoring]true"
+      displayName: Override Set status monitoring
+
   - bash: |
       set -euo pipefail
-      
+
       if [[ "${{ parameters.apigee_environment }}" == "prod" ]]; then
         export url="https://api.service.nhs.uk/monitoring-sd/service"
         export status_body='{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx https://api.service.nhs.uk/${{ parameters.service_base_path }}/_status" ] } }'
