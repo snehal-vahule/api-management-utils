@@ -316,6 +316,8 @@ steps:
     parameters:
       enable_status_monitoring: $(enable_status_monitoring)
       enable_ping_monitoring: $(enable_ping_monitoring)
+      stage_name: "${{ parameters.stage_name }}"
+      apigee_environment: "${{ parameters.apigee_environment }}"
 
   - ${{ each post_deploy_step in parameters.post_deploy }}:
     - ${{ post_deploy_step }}

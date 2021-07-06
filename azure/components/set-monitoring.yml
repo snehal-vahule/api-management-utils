@@ -3,6 +3,8 @@ parameters:
     default: true
   - name: enable_ping_monitoring
     default: true
+  - name: stage_name
+  - name: apigee_environment
 
 
 steps:
@@ -30,19 +32,19 @@ steps:
   - ${{ if parameters.enable_status_monitoring }}:
     - bash: |
         curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d $(body) $(url_/_status
-      displayName: ${{ coalesce(parameters.display_name, 'curl') }}
+      displayName: Enable _status monitoring
 
   - ${{ if not(parameters.enable_status_monitoring) }}:
     - bash: |
         curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d $(body) $(url)/_status
-      displayName: ${{ coalesce(parameters.display_name, 'curl') }}
+      displayName: Disable _status monitoring
 
   - ${{ if parameters.enable_monitoring }}:
     - bash: |
         curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d $(body) $(url)/_ping
-      displayName: ${{ coalesce(parameters.display_name, 'curl') }}
+      displayName: Enable _ping monitoring
 
   - ${{ if not(parameters.enable_monitoring) }}:
     - bash: |
         curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d $(body) $(url)/_ping
-      displayName: ${{ coalesce(parameters.display_name, 'curl') }}
+      displayName: Disable _ping monitoring
