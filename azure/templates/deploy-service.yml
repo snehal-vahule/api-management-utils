@@ -354,25 +354,25 @@ steps:
       fi
     displayName: Setting monitoring url and body
  
-    - bash: |
-        curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(status_body)' $(url)
-      displayName: Enable _status monitoring
-      condition: eq(variables['set_status_monitoring'], 'true')
+  - bash: |
+      curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(status_body)' $(url)
+    displayName: Enable _status monitoring
+    condition: eq(variables['set_status_monitoring'], 'true')
 
-    - bash: |
-        curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d '$(status_body)' $(url)
-      displayName: Disable _status monitoring
-      condition: eq(variables['set_status_monitoring'], 'false')
+  - bash: |
+      curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d '$(status_body)' $(url)
+    displayName: Disable _status monitoring
+    condition: eq(variables['set_status_monitoring'], 'false')
 
-    - bash: |
-        curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(ping_body)' $(url)
-      displayName: Enable _ping monitoring
-      condition: eq(variables['set_ping_monitoring'], 'true')
+  - bash: |
+      curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(ping_body)' $(url)
+    displayName: Enable _ping monitoring
+    condition: eq(variables['set_ping_monitoring'], 'true')
 
-    - bash: |
-        curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d '$(ping_body)' $(url)
-      displayName: Disable _ping monitoring
-      condition: eq(variables['set_ping_monitoring'], 'false')
+  - bash: |
+      curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d '$(ping_body)' $(url)
+    displayName: Disable _ping monitoring
+    condition: eq(variables['set_ping_monitoring'], 'false')
 
   # - template: '../components/set-monitoring.yml'
   #   parameters:
