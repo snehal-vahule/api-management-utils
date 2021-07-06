@@ -276,6 +276,7 @@ steps:
       if [[ $status_endpoint_response == "200" ]]; then
         if [[ $is_pull_request ]]; then
           echo "_status endpoint is present in the proxy, however we dont monitor pull requests"
+          echo "##vso[task.setvariable variable=set_status_monitoring]false"
         else
           echo "_status endpoint is present in the proxy, we will enable monitoring by default"
           echo "##vso[task.setvariable variable=set_status_monitoring]true"
@@ -297,6 +298,7 @@ steps:
       if [[ $ping_endpoint_response == "200" ]]; then
         if [[ $is_pull_request ]]; then
           echo "_ping endpoint is present in the proxy, however we dont monitor pull requests"
+          echo "##vso[task.setvariable variable=set_ping_monitoring]false"
         else
           echo "_ping endpoint is present in the proxy, we will enable monitoring by default"
           echo "##vso[task.setvariable variable=set_ping_monitoring]true"
@@ -373,15 +375,6 @@ steps:
       curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d '$(ping_body)' $(url)
     displayName: Disable _ping monitoring
     condition: eq(variables['set_ping_monitoring'], 'false')
-
-  # - template: '../components/set-monitoring.yml'
-  #   parameters:
-  #     set_status_monitoring: $(set_status_monitoring)
-  #     set_ping_monitoring: $(set_ping_monitoring)
-  #     stage_name: "${{ parameters.stage_name }}"
-  #     apigee_environment: "${{ parameters.apigee_environment }}"
-  #     service_name: "${{ parameters.service_name }}"
-  #     service_base_path: "${{ parameters.service_base_path }}"
 
   - ${{ each post_deploy_step in parameters.post_deploy }}:
     - ${{ post_deploy_step }}
