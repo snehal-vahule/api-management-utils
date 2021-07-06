@@ -1,7 +1,7 @@
 parameters:
-  - name: enable_status_monitoring
+  - name: set_status_monitoring
     default: false
-  - name: enable_ping_monitoring
+  - name: set_ping_monitoring
     default: false
   - name: stage_name
   - name: apigee_environment
@@ -20,33 +20,40 @@ steps:
   - bash: |
       if [[ "${{ parameters.apigee_environment }}" == "prod" ]]; then
         export url="https://api.service.nhs.uk/monitoring-sd/service"
-        export body='{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx https://api.service.nhs.uk/${{ parameters.service_base_path }}" ] } }'
+        export status_body='{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx https://api.service.nhs.uk/${{ parameters.service_base_path }}/_status" ] } }'
+        export ping_body='{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
+
         echo "##vso[task.setvariable variable=url]$url"
-        echo "##vso[task.setvariable variable=body]$body"
+        echo "##vso[task.setvariable variable=status_body]$status_body"
+        echo "##vso[task.setvariable variable=ping_body]$ping_body"
       else
         export url="https://internal-dev.api.service.nhs.uk/monitoring-sd/service"
-        export body='{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}" ] } }'
+        export status_body='{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_status" ] } }'
+        export ping_body='{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
+
         echo "##vso[task.setvariable variable=url]$url"
-        echo "##vso[task.setvariable variable=body]$body"
+        echo "##vso[task.setvariable variable=status_body]$status_body"
+        echo "##vso[task.setvariable variable=ping_body]$ping_body"
+
       fi
     displayName: Setting monitoring url and body
 
-  - ${{ if parameters.enable_status_monitoring }}:
+  - ${{ if parameters.set_status_monitoring }}:
     - bash: |
-        curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(body)/_status' $(url)
+        curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(status_body)' $(url)
       displayName: Enable _status monitoring
 
-  - ${{ if not(parameters.enable_status_monitoring) }}:
+  - ${{ if not(parameters.set_status_monitoring) }}:
     - bash: |
-        curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d '$(body)/_status' $(url)
+        curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d '$(status_body)' $(url)
       displayName: Disable _status monitoring
 
-  - ${{ if parameters.enable_ping_monitoring }}:
+  - ${{ if parameters.set_ping_monitoring }}:
     - bash: |
-        curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '(body)/_ping' $(url)
+        curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(ping_body)' $(url)
       displayName: Enable _ping monitoring
 
-  - ${{ if not(parameters.enable_ping_monitoring) }}:
+  - ${{ if not(parameters.set_ping_monitoring) }}:
     - bash: |
-        curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d '$(body)/_ping' $(url)
+        curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d '$(ping_body)' $(url)
       displayName: Disable _ping monitoring

@@ -278,7 +278,7 @@ steps:
           echo "_status endpoint is present in the proxy, however we dont monitor pull requests"
         else
           echo "_status endpoint is present in the proxy, we will enable monitoring by default"
-          echo "##vso[task.setvariable variable=enable_status_monitoring]true"
+          echo "##vso[task.setvariable variable=set_status_monitoring]true"
         fi
       else
         if [[ $is_pull_request ]]; then
@@ -286,7 +286,7 @@ steps:
         else
           if [[ "${{ not(parameters.enable_status_monitoring) }}" == "true" ]]; then
             echo "_status endpoint monitoring is disabled"
-            echo "##vso[task.setvariable variable=enable_status_monitoring]false"
+            echo "##vso[task.setvariable variable=set_status_monitoring]false"
           else
             "ERROR: Your proxy dont have a _status endpoint therefore we can't monitor this proxy therefore it should not be released"
             exit 1
@@ -302,12 +302,12 @@ steps:
 
   - ${{ if not(parameters.enable_status_monitoring) }}:
     - bash: | 
-        echo "##vso[task.setvariable variable=enable_status_monitoring]false"
+        echo "##vso[task.setvariable variable=set_status_monitoring]false"
 
   - template: '../components/set-monitoring.yml'
     parameters:
-      enable_status_monitoring: $(enable_status_monitoring)
-      enable_ping_monitoring: $(enable_ping_monitoring)
+      enable_status_monitoring: $(set_status_monitoring)
+      enable_ping_monitoring: $(set_ping_monitoring)
       stage_name: "${{ parameters.stage_name }}"
       apigee_environment: "${{ parameters.apigee_environment }}"
       service_name: "${{ parameters.service_name }}"
