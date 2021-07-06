@@ -258,22 +258,32 @@ steps:
       if [[ "${{ parameters.apigee_environment }}" == "prod" ]]; then
         export status_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(status-endpoint-api-key)" https://api.service.nhs.uk/${{ parameters.service_base_path }}/_status`
         export ping_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(status-endpoint-api-key)" https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping`
-        echo service_base_path = ${{ parameters.service_base_path }}
-        echo _status_response=$status_endpoint_response
-        echo _ping_response=$ping_endpoint_response
       else
         export status_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(status-endpoint-api-key)" https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_status`
         export ping_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(status-endpoint-api-key)" https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping`
-        echo service_base_path=${{ parameters.service_base_path }}
-        echo _status_response=$status_endpoint_response
-        echo _ping_reponse=$ping_endpoint_response
       fi
-      
+
+      echo service_base_path = ${{ parameters.service_base_path }}
+      echo _status_response=$status_endpoint_response
+      echo _ping_response=$ping_endpoint_response
+      echo "##vso[task.setvariable variable=status_endpoint_response]$status_endpoint_response"
+      echo "##vso[task.setvariable variable=ping_endpoint_response]$ping_endpoint_response"
+    displayName: 'Check _ping and _status endpoints'
+
+
+  - bash: |
+      set -euo pipefail
+
+      echo "Setting stage name as snake case for monitoring"
+      export MONITORING_STAGE_NAME="${{ replace(parameters.stage_name, '_', '-') }}"
+      echo "MONITORING_STAGE_NAME=${MONITORING_STAGE_NAME}"
+      echo "##vso[task.setvariable variable=MONITORING_STAGE_NAME]$MONITORING_STAGE_NAME"
+     
       if [[ "${{ parameters.service_base_path }}" == *"-pr-"* ]]; then
         export is_pull_request=true
       fi
 
-      if [[ $status_endpoint_response == "200" ]]; then
+      if [[ $(status_endpoint_response) == "200" ]]; then
         if [[ $is_pull_request ]]; then
           echo "_status endpoint is present in the proxy, however we dont monitor pull requests"
           echo "##vso[task.setvariable variable=set_status_monitoring]false"
@@ -284,6 +294,7 @@ steps:
       else
         if [[ $is_pull_request ]]; then
           echo "WARNING: Please add a _status endpoit to your proxy before releasing or your release will fail. Or use the flag 'enable_status_monitoring=false' if your API don't support _status healthcheck"
+          echo "##vso[task.setvariable variable=set_status_monitoring]false"
         else
           if [[ "${{ not(parameters.enable_status_monitoring) }}" == "true" ]]; then
             echo "_status endpoint monitoring is disabled"
@@ -295,7 +306,7 @@ steps:
         fi
       fi
 
-      if [[ $ping_endpoint_response == "200" ]]; then
+      if [[ $(ping_endpoint_response) == "200" ]]; then
         if [[ $is_pull_request ]]; then
           echo "_ping endpoint is present in the proxy, however we dont monitor pull requests"
           echo "##vso[task.setvariable variable=set_ping_monitoring]false"
@@ -306,6 +317,7 @@ steps:
       else
         if [[ $is_pull_request ]]; then
           echo "WARNING: Please add a _ping endpoit to your proxy before releasing or your release will fail."
+          echo "##vso[task.setvariable variable=set_ping_monitoring]false"
         else
           if [[ "${{ not(parameters.enable_monitoring) }}" == "true" ]]; then
             echo "_ping endpoint monitoring is disabled"
@@ -317,43 +329,34 @@ steps:
         fi
       fi
 
-    displayName: 'Check _ping and _status endpoints'
+    displayName: 'Set monitoring'
 
   - ${{ if not(parameters.enable_monitoring) }}:
     - bash: |
         echo "##vso[task.setvariable variable=set_ping_monitoring]false"
-      displayName: Override set_ping_monitoring
+      displayName: Override Set ping monitoring
 
   - ${{ if not(parameters.enable_status_monitoring) }}:
     - bash: | 
         echo "##vso[task.setvariable variable=set_status_monitoring]false"
-      displayName: Override set_status_monitoring
+      displayName: Override Set status monitoring
 
   - bash: |
-      echo "Setting stage name as snake case for monitoring"
-      export MONITORING_STAGE_NAME="${{ replace(parameters.stage_name, '_', '-') }}"
-      echo "MONITORING_STAGE_NAME=${MONITORING_STAGE_NAME}"
-      echo "##vso[task.setvariable variable=MONITORING_STAGE_NAME]$MONITORING_STAGE_NAME"
-    displayName: 'Setting MONITORING_STAGE_NAME'
-
-  - bash: |
+      set -euo pipefail
+      
       if [[ "${{ parameters.apigee_environment }}" == "prod" ]]; then
         export url="https://api.service.nhs.uk/monitoring-sd/service"
         export status_body='{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx https://api.service.nhs.uk/${{ parameters.service_base_path }}/_status" ] } }'
         export ping_body='{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
-
-        echo "##vso[task.setvariable variable=url]$url"
-        echo "##vso[task.setvariable variable=status_body]$status_body"
-        echo "##vso[task.setvariable variable=ping_body]$ping_body"
       else
         export url="https://internal-dev.api.service.nhs.uk/monitoring-sd/service"
         export status_body='{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_status" ] } }'
         export ping_body='{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
-
-        echo "##vso[task.setvariable variable=url]$url"
-        echo "##vso[task.setvariable variable=status_body]$status_body"
-        echo "##vso[task.setvariable variable=ping_body]$ping_body"
       fi
+
+      echo "##vso[task.setvariable variable=url]$url"
+      echo "##vso[task.setvariable variable=status_body]$status_body"
+      echo "##vso[task.setvariable variable=ping_body]$ping_body"
     displayName: Setting monitoring url and body
  
   - bash: |
