@@ -62,10 +62,6 @@ parameters:
     type: boolean
     displayName: Temporary flag for adding a _status endpoint to service discovery
     default: true
-  - name: set_status_monitoring
-    default: false
-  - name: set_ping_monitoring
-    default: false
   - name: secret_file_ids
     displayName: List of additional AWS Secrets Manager multiline Secret IDs
     type: object
@@ -122,8 +118,6 @@ parameters:
       - secret_file_ids
       - secret_ids
       - config_ids
-      - set_status_monitoring
-      - set_ping_monitoring
   - name: _scoped_step_list_vars
     type: object
     displayName: Subset of scoped pipeline variables that are of type stepList
