@@ -306,8 +306,8 @@ steps:
 
   - template: '../components/set-monitoring.yml'
     parameters:
-      enable_status_monitoring: $(set_status_monitoring)
-      enable_ping_monitoring: $(set_ping_monitoring)
+      set_status_monitoring: $(set_status_monitoring)
+      set_ping_monitoring: $(set_ping_monitoring)
       stage_name: "${{ parameters.stage_name }}"
       apigee_environment: "${{ parameters.apigee_environment }}"
       service_name: "${{ parameters.service_name }}"
