@@ -286,13 +286,13 @@ steps:
       if [[ $(status_endpoint_response) == "200" ]]; then
         if [[ $is_pull_request ]]; then
           echo "_status endpoint is present in the proxy, however we dont monitor pull requests"
-          echo "##vso[task.setvariable variable=set_status_monitoring]false"
+          echo "##vso[task.setvariable variable=set_status_monitoring]false"   
         else
           echo "_status endpoint is present in the proxy, we will enable monitoring by default"
           echo "##vso[task.setvariable variable=set_status_monitoring]true"
         fi
       else
-        if [[ "${{ not(parameters.enable_status_monitoring) }}" == "true" ]]; then
+        if [[ "${{ parameters.enable_status_monitoring }}" == "false" ]]; then
           echo "_status endpoint monitoring is disabled"
           echo "##vso[task.setvariable variable=set_status_monitoring]false"
         else
@@ -310,7 +310,7 @@ steps:
           echo "##vso[task.setvariable variable=set_ping_monitoring]true"
         fi
       else
-        if [[ "${{ not(parameters.enable_monitoring) }}" == "true" ]]; then
+        if [[ "${{ parameters.enable_monitoring }}" == "false" ]]; then
           echo "_ping endpoint monitoring is disabled"
           echo "##vso[task.setvariable variable=set_ping_monitoring]false"
         else
@@ -320,26 +320,6 @@ steps:
       fi
 
     displayName: 'Set monitoring'
-
-  - ${{ if not(parameters.enable_monitoring) }}:
-    - bash: |
-        echo "##vso[task.setvariable variable=set_ping_monitoring]false"
-      displayName: Override Set ping monitoring
-
-  - ${{ if parameters.enable_monitoring }}:
-    - bash: |
-        echo "##vso[task.setvariable variable=set_ping_monitoring]true"
-      displayName: Override Set ping monitoring
-
-  - ${{ if not(parameters.enable_status_monitoring) }}:
-    - bash: | 
-        echo "##vso[task.setvariable variable=set_status_monitoring]false"
-      displayName: Override Set status monitoring
-
-  - ${{ if parameters.enable_status_monitoring }}:
-    - bash: | 
-        echo "##vso[task.setvariable variable=set_status_monitoring]true"
-      displayName: Override Set status monitoring
 
   - bash: |
       set -euo pipefail
