@@ -319,6 +319,7 @@ steps:
       stage_name: "${{ parameters.stage_name }}"
       apigee_environment: "${{ parameters.apigee_environment }}"
       service_name: "${{ parameters.service_name }}"
+      service_base_path: "${{ parameters.service_base_path }}"
 
   - ${{ each post_deploy_step in parameters.post_deploy }}:
     - ${{ post_deploy_step }}

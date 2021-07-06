@@ -6,6 +6,7 @@ parameters:
   - name: stage_name
   - name: apigee_environment
   - name: service_name
+  - name: service_base_path
 
 
 steps:
