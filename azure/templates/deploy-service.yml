@@ -316,7 +316,7 @@ steps:
         fi
       else
         if [[ $is_pull_request ]]; then
-          echo "WARNING: Please add a _ping endpoit to your proxy before releasing or your release will fail. 
+          echo "WARNING: Please add a _ping endpoit to your proxy before releasing or your release will fail." 
           echo "##vso[task.setvariable variable=set_ping_monitoring]false"
         else
           if [[ "${{ parameters.enable_monitoring }}" == "false" ]]; then
