@@ -281,6 +281,8 @@ steps:
      
       if [[ "${{ parameters.service_base_path }}" == *"-pr-"* ]]; then
         export is_pull_request=true
+      else
+        export is_pull_request=false
       fi
 
       if [[ $(status_endpoint_response) == "200" ]]; then
