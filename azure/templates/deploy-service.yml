@@ -260,39 +260,133 @@ steps:
       fi
     displayName: 'Deploy Proxy, Product and Spec'
 
-  - ${{ if or(parameters.enable_monitoring, parameters.enable_status_monitoring) }}:
-    - bash: |
-        echo "Setting stage name as snake case for monitoring"
-        export MONITORING_STAGE_NAME="${{ replace(parameters.stage_name, '_', '-') }}"
-        echo "MONITORING_STAGE_NAME=${MONITORING_STAGE_NAME}"
-        echo "##vso[task.setvariable variable=MONITORING_STAGE_NAME]$MONITORING_STAGE_NAME"
-      displayName: 'Setting MONITORING_STAGE_NAME'
+  - bash: |
+      set -euo pipefail
 
-  - ${{ if parameters.enable_monitoring }}:
-      - template: '../components/curl.yml'
-        parameters:
-          display_name: Add monitoring endpoints          
-          method: POST
-          headers: "apikey: $(MONITORING_API_KEY)"
-          ${{ if eq(parameters.apigee_environment, 'prod') }}:
-            url: "https://api.service.nhs.uk/monitoring-sd/service"
-            body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
-          ${{ if not(eq(parameters.apigee_environment, 'prod')) }}:
-            url: "https://internal-dev.api.service.nhs.uk/monitoring-sd/service"
-            body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
+      if [[ "${{ parameters.apigee_environment }}" == "prod" ]]; then
+        export status_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(status-endpoint-api-key)" https://api.service.nhs.uk/${{ parameters.service_base_path }}/_status`
+        export ping_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(status-endpoint-api-key)" https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping`
+      else
+        export status_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(status-endpoint-api-key)" https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_status`
+        export ping_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(status-endpoint-api-key)" https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping`
+      fi
 
-  - ${{ if parameters.enable_status_monitoring  }}:
-     - template: '../components/curl.yml'
-       parameters:
-        display_name: Add status endpoint        
-        method: POST
-        headers: "apikey: $(MONITORING_API_KEY)"
-        ${{ if eq(parameters.apigee_environment, 'prod') }}:
-          url: "https://api.service.nhs.uk/monitoring-sd/service"
-          body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping", "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx_with_api_key https://api.service.nhs.uk/${{ parameters.service_base_path }}/_status"  ] } }'
-        ${{ if not(eq(parameters.apigee_environment, 'prod')) }}:
-          url: "https://internal-dev.api.service.nhs.uk/monitoring-sd/service"
-          body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping", "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx_with_api_key https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_status"  ] } }'
+      echo service_base_path = ${{ parameters.service_base_path }}
+      echo _status_response=$status_endpoint_response
+      echo _ping_response=$ping_endpoint_response
+      echo "##vso[task.setvariable variable=status_endpoint_response]$status_endpoint_response"
+      echo "##vso[task.setvariable variable=ping_endpoint_response]$ping_endpoint_response"
+    displayName: 'Check _ping and _status endpoints'
+
+  - bash: |
+      set -euo pipefail
+
+      echo "Setting stage name as snake case for monitoring"
+      export MONITORING_STAGE_NAME="${{ replace(parameters.stage_name, '_', '-') }}"
+      echo "MONITORING_STAGE_NAME=${MONITORING_STAGE_NAME}"
+      echo "##vso[task.setvariable variable=MONITORING_STAGE_NAME]$MONITORING_STAGE_NAME"
+     
+      if [[ "${{ parameters.service_base_path }}" == *"-pr-"* ]]; then
+        export is_pull_request=true
+      else
+        export is_pull_request=false
+      fi
+
+      if [[ $(status_endpoint_response) == "200" ]]; then
+        if [[ $is_pull_request == 'true' ]]; then
+          echo "_status endpoint is present in the proxy, however we dont monitor pull requests"
+          echo "##vso[task.setvariable variable=set_status_monitoring]false"   
+        else
+          if [[ "${{ parameters.enable_status_monitoring }}" == "False" ]]; then
+            echo "_status endpoint monitoring is disabled"
+            echo "##vso[task.setvariable variable=set_status_monitoring]false"
+          else
+            echo "_status endpoint is present in the proxy, we will enable monitoring by default"
+            echo "##vso[task.setvariable variable=set_status_monitoring]true"
+          fi
+        fi
+      else
+        if [[ $is_pull_request == 'true' ]]; then
+          echo "WARNING: Please add a _status endpoit to your proxy before releasing or your release will fail. Or use the flag 'enable_status_monitoring=false' if your API don't support _status healthcheck" 
+          echo "##vso[task.setvariable variable=set_status_monitoring]false"   
+        else
+          if [[ "${{ parameters.enable_status_monitoring }}" == "False" ]]; then
+            echo "_status endpoint monitoring is disabled"
+            echo "##vso[task.setvariable variable=set_status_monitoring]false"
+          else
+            echo "ERROR: Your proxy dont have a _status endpoint therefore we can't monitor this proxy and it should not be released"
+            exit 1
+          fi 
+        fi 
+      fi
+
+      if [[ $(ping_endpoint_response) == "200" ]]; then
+        if [[ $is_pull_request == 'true' ]]; then
+          echo "_ping endpoint is present in the proxy, however we dont monitor pull requests"
+          echo "##vso[task.setvariable variable=set_ping_monitoring]false"
+        else
+          if [[ "${{ parameters.enable_monitoring }}" == "False" ]]; then
+            echo "_ping endpoint monitoring is disabled"
+            echo "##vso[task.setvariable variable=set_ping_monitoring]false"
+          else
+            echo "_ping endpoint is present in the proxy, we will enable monitoring by default"
+            echo "##vso[task.setvariable variable=set_ping_monitoring]true"
+          fi
+        fi
+      else
+        if [[ $is_pull_request == 'true' ]]; then
+          echo "WARNING: Please add a _ping endpoit to your proxy before releasing or your release will fail." 
+          echo "##vso[task.setvariable variable=set_ping_monitoring]false"
+        else
+          if [[ "${{ parameters.enable_monitoring }}" == "False" ]]; then
+            echo "_ping endpoint monitoring is disabled"
+            echo "##vso[task.setvariable variable=set_ping_monitoring]false"
+          else
+            "ERROR: Your proxy dont have a _ping endpoint therefore we can't monitor this proxy and it should not be released"
+            exit 1
+          fi
+        fi
+      fi
+
+    displayName: 'Check monitoring'
+
+  - bash: |
+      set -euo pipefail
+
+      if [[ "${{ parameters.apigee_environment }}" == "prod" ]]; then
+        export url="https://api.service.nhs.uk/monitoring-sd/service"
+        export status_body='{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx_with_api_key https://api.service.nhs.uk/${{ parameters.service_base_path }}/_status" ] } }'
+        export ping_body='{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
+      else
+        export url="https://internal-dev.api.service.nhs.uk/monitoring-sd/service"
+        export status_body='{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx_with_api_key https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_status" ] } }'
+        export ping_body='{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
+      fi
+
+      echo "##vso[task.setvariable variable=url]$url"
+      echo "##vso[task.setvariable variable=status_body]$status_body"
+      echo "##vso[task.setvariable variable=ping_body]$ping_body"
+    displayName: Set monitoring url and body
+ 
+  - bash: |
+      curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(status_body)' $(url)
+    displayName: Enable _status monitoring
+    condition: eq(variables['set_status_monitoring'], 'true')
+
+  - bash: |
+      curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d '$(status_body)' $(url)
+    displayName: Disable _status monitoring
+    condition: eq(variables['set_status_monitoring'], 'false')
+
+  - bash: |
+      curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(ping_body)' $(url)
+    displayName: Enable _ping monitoring
+    condition: eq(variables['set_ping_monitoring'], 'true')
+
+  - bash: |
+      curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d '$(ping_body)' $(url)
+    displayName: Disable _ping monitoring
+    condition: eq(variables['set_ping_monitoring'], 'false')
 
   - ${{ each post_deploy_step in parameters.post_deploy }}:
     - ${{ post_deploy_step }}
