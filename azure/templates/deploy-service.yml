@@ -287,15 +287,13 @@ steps:
 
       if [[ $(status_endpoint_response) == "200" ]]; then
         if [[ $is_pull_request == 'true' ]]; then
-          echo "_status endpoint is present in the proxy, however we dont monitor pull requests"
+          ##[warning]"_status endpoint is present in the proxy, however we dont monitor pull requests"
           echo "##vso[task.setvariable variable=set_status_monitoring]false"   
         else
           if [[ "${{ parameters.enable_status_monitoring }}" == "False" ]]; then
-            echo "${{ parameters.enable_status_monitoring }}"
             echo "_status endpoint monitoring is disabled"
             echo "##vso[task.setvariable variable=set_status_monitoring]false"
           else
-            echo "${{ parameters.enable_status_monitoring }}"
             echo "_status endpoint is present in the proxy, we will enable monitoring by default"
             echo "##vso[task.setvariable variable=set_status_monitoring]true"
           fi
@@ -309,7 +307,7 @@ steps:
             echo "_status endpoint monitoring is disabled"
             echo "##vso[task.setvariable variable=set_status_monitoring]false"
           else
-            echo "ERROR: Your proxy dont have a _status endpoint therefore we can't monitor this proxy therefore it should not be released"
+            echo "ERROR: Your proxy dont have a _status endpoint therefore we can't monitor this proxy and it should not be released"
             exit 1
           fi 
         fi 
@@ -321,11 +319,9 @@ steps:
           echo "##vso[task.setvariable variable=set_ping_monitoring]false"
         else
           if [[ "${{ parameters.enable_monitoring }}" == "False" ]]; then
-            echo "${{ parameters.enable_monitoring }}"
             echo "_ping endpoint monitoring is disabled"
             echo "##vso[task.setvariable variable=set_ping_monitoring]false"
           else
-            echo "${{ parameters.enable_monitoring }}"
             echo "_ping endpoint is present in the proxy, we will enable monitoring by default"
             echo "##vso[task.setvariable variable=set_ping_monitoring]true"
           fi
@@ -339,13 +335,13 @@ steps:
             echo "_ping endpoint monitoring is disabled"
             echo "##vso[task.setvariable variable=set_ping_monitoring]false"
           else
-            "ERROR: Your proxy dont have a _ping endpoint therefore we can't monitor this proxy therefore it should not be released"
+            "ERROR: Your proxy dont have a _ping endpoint therefore we can't monitor this proxy and it should not be released"
             exit 1
           fi
         fi
       fi
 
-    displayName: 'Set monitoring'
+    displayName: 'Check monitoring'
 
   - bash: |
       set -euo pipefail
@@ -363,7 +359,7 @@ steps:
       echo "##vso[task.setvariable variable=url]$url"
       echo "##vso[task.setvariable variable=status_body]$status_body"
       echo "##vso[task.setvariable variable=ping_body]$ping_body"
-    displayName: Setting monitoring url and body
+    displayName: Set monitoring url and body
  
   - bash: |
       curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(status_body)' $(url)
