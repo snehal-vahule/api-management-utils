@@ -270,10 +270,9 @@ steps:
       echo "##vso[task.setvariable variable=ping_endpoint_response]$ping_endpoint_response"
     displayName: 'Check _ping and _status endpoints'
 
-
   - bash: |
       set -euo pipefail
-      
+
       echo "Setting stage name as snake case for monitoring"
       export MONITORING_STAGE_NAME="${{ replace(parameters.stage_name, '_', '-') }}"
       echo "MONITORING_STAGE_NAME=${MONITORING_STAGE_NAME}"
