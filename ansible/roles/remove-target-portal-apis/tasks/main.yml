@@ -1,0 +1,41 @@
+- name: list portals
+  uri:
+    url: "{{ portals_list_uri }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    return_content: yes
+  register: portals
+
+- name: set portal_id
+  set_fact:
+    portal_id: "{{ portals.json.data[0].id }}"
+
+- name: get apidocs
+  uri:
+    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    status_code: 200
+    return_content: yes
+  register: apidocs
+
+- name: set portal_filter
+  set_fact:
+    portal_filter: "{{ apidocs.json.data | to_json | from_json | json_query(item) }}"
+  with_items: 
+    - "[?contains(apiId, '-pr-')]"
+    - "[?contains(apiId, '-apm-')]"
+    - "[?contains(apiId, '-aea-')]"
+    - "[?contains(apiId, '-adz-')]"
+    - "[?contains(apiId, '-apmspii-')]"
+    - "[?contains(apiId, '-dependabot-')]"
+  register: search_result
+
+- name: make a list and set portal_api
+  set_fact:
+    portal_apis: "{{ search_result.results | map(attribute='ansible_facts.portal_filter') | list | flatten }}"
+
+- name: determine whether to remove
+  include_tasks: remove-target-portal-api.yml
+  loop: "{{ portal_apis }}"

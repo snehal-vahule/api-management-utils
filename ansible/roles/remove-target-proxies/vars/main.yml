@@ -1,0 +1,4 @@
+org_uri: "https://api.enterprise.apigee.com/v1/organizations/{{ APIGEE_ORGANIZATION }}"
+apis_uri: "{{ org_uri }}/apis"
+products_uri: "{{ org_uri }}/apiproducts"
+retain_hours:  "{{ (lookup('env', 'retain_hours') or 72) }}"

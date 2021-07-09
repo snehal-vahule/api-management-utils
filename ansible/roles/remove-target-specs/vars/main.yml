@@ -1,0 +1,4 @@
+dapi_uri: "https://apigee.com/dapi/api/organizations/{{ APIGEE_ORGANIZATION }}"
+specs_list_uri: "{{ dapi_uri }}/specs/folder/home"
+specs_resource_uri: "{{ dapi_uri }}/specs/doc"
+retain_hours:  "{{ (lookup('env', 'retain_hours') or 72) }}"

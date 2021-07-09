@@ -1,0 +1,30 @@
+
+- name: "get products"
+  uri:
+    url: "{{ products_uri }}?expand=true"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    return_content: yes
+  register: get_products
+
+- name: filter apis
+  set_fact:
+    api_products_map: "{{ get_products.json.apiProduct | apigee_products_to_api_map(proxy_filter='.*-pr-[0-9]+.*') }}"
+
+- name: "get apis"
+  uri:
+    url: "{{ apis_uri }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    return_content: yes
+  register: get_apis
+
+- name: filter apis
+  set_fact:
+    pr_apis: "{{  get_apis.json | select('match', '.*-pr-[0-9]+.*') }}"
+
+- name: remove pr apis
+  include_tasks: remove-api.yml
+  loop: "{{ pr_apis }}"
+  loop_control:
+    loop_var: "api_slug"

@@ -87,6 +87,19 @@ remove-old-pr-products:
 remove-old-pr-proxies:
 	@poetry run ansible-playbook -i local remove-old-pr-proxies.yml
 
+remove-target-portal-apis:
+	@poetry run ansible-playbook -i local remove-target-portal-apis.yml
+
+remove-target-specs:
+	@poetry run ansible-playbook -i local remove-target-specs.yml
+
+remove-target-products:
+	@poetry run ansible-playbook -i local remove-target-products.yml
+
+remove-target-proxies:
+	@poetry run ansible-playbook -i local remove-target-proxies.yml
+
+
 deploy-api-pipelines: guard-PREFIX guard-REPO guard-SERVICE_CONNECTION_ID
 	PREFIX="$(PREFIX)" ORG="NHSD-APIM" PROJECT="API Platform" REPO="https://github.com/NHSDigital/$(REPO)" SERVICE_CONNECTION="$(SERVICE_CONNECTION_ID)" poetry run ansible-playbook ansible/deploy-api-pipelines.yml
 

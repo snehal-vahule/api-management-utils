@@ -1,0 +1,3 @@
+portals_base_uri: "https://apigee.com/portals/api/sites"
+portals_list_uri: "{{ portals_base_uri }}?orgname={{ APIGEE_ORGANIZATION }}"
+retain_hours:  "{{ (lookup('env', 'retain_hours') or 72) }}"

@@ -1,0 +1,23 @@
+
+- name: "get product {{ product_slug }}"
+  uri:
+    url: "{{ products_uri }}/{{ product_slug }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    return_content: yes
+  register: get_product
+
+- name: "get product {{ product_slug }}"
+  set_fact:
+    product: "{{ get_product.json | apigee_remove_proxy_from_product(api_slug) }}"
+
+- name: "update product {{ product_slug }}"
+  uri:
+    url: "{{ products_uri }}/{{ product_slug }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    body_format: json
+    body: "{{ product }}"
+    method: PUT
+    return_content: yes
+  changed_when: yes

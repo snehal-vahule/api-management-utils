@@ -1,0 +1,106 @@
+name: "$(SourceBranchName)+$(BuildID)"
+
+trigger: none
+pr: none
+
+parameters:
+  - name: org
+    displayName: Organisation of target proxy
+    type: string
+    default: nonprod
+    values:
+    - nonprod
+    - prod
+
+  - name: service_name
+    displayName: Name of service to be removed
+    type: string
+    default: ""
+
+  - name: has_ecs_backend
+    displayName: Target service has ecs backend
+    type: boolean
+
+  - name: environment
+    displayName: Name of target environment
+    type: string
+    default: ""
+
+
+jobs:
+  - job: build
+    displayName: Cleanup Named Proxy
+    timeoutInMinutes: 240
+    pool:
+      name: 'AWS-ECS'
+
+    workspace:
+      clean: all
+
+    steps:
+
+      - checkout: self
+
+      - bash: |
+          instance_id="$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
+          echo instance-id: "${instance_id}"
+          echo connect to: https://eu-west-2.console.aws.amazon.com/systems-manager/session-manager/${instance_id}
+          echo sudo su - ubuntu
+          or
+          echo ssh ubuntu@${instance_id}
+          echo working directory: $(System.DefaultWorkingDirectory)
+        displayName: print aws info
+
+      - template: ./components/aws-assume-role.yml
+        parameters:
+          role: "auto-ops"
+          profile: "apm_ptl"
+
+      - bash: |
+          tfenv use 0.14.6
+        displayName: setup terraform
+
+      - bash: |
+          make install
+        displayName: install dependencies
+
+      - bash: |
+          export SERVICE_NAME="$(service_name)"
+          export has_ecs_backend="$(has_ecs_backend)"
+          export ENVIRONMENT="$(environment)"
+          export APIGEE_ORGANIZATION="nhsd-$org"
+          export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
+          export retain_hours=72
+          ANSIBLE_FORCE_COLOR=yes make -C ansible remove-old-target-portal-apis
+        displayName: "cleanup old target portal apis"
+
+      - bash: |
+          export SERVICE_NAME="$(service_name)"
+          export has_ecs_backend="$(has_ecs_backend)"
+          export ENVIRONMENT="$(environment)"
+          export APIGEE_ORGANIZATION="nhsd-$org"
+          export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
+          export retain_hours=72
+          ANSIBLE_FORCE_COLOR=yes make -C ansible remove-old-target-specs
+        displayName: "cleanup old target specs"
+
+      - bash: |
+          export SERVICE_NAME="$(service_name)"
+          export has_ecs_backend="$(has_ecs_backend)"
+          export ENVIRONMENT="$(environment)"
+          export APIGEE_ORGANIZATION="nhsd-$org"
+          export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
+          export retain_hours=72
+          ANSIBLE_FORCE_COLOR=yes make -C ansible remove-old-target-products
+        displayName: "cleanup old target products"
+
+      - bash: |
+          export SERVICE_NAME="$(service_name)"
+          export has_ecs_backend="$(has_ecs_backend)"
+          export ENVIRONMENT="$(environment)"
+          export APIGEE_ORGANIZATION="nhsd-$org"
+          export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
+          export retain_hours=72
+          ANSIBLE_FORCE_COLOR=yes make -C ansible remove-old-target-proxies
+        displayName: "cleanup old target proxies"
+
