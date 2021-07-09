@@ -182,7 +182,7 @@ stages:
                 - bash: |
                     set -euo pipefail
                     if [[ ! -z $(UTILS_PR_NUMBER) ]]; then
-                      export PR_LABEL="pr-$(UTILS_PR_NUMBER)"
+                      export PR_LABEL="utils-pr-$(UTILS_PR_NUMBER)"
                       echo "##[debug]Triggered from utils repository, PR_LABEL=${PR_LABEL}"
                       echo "##vso[task.setvariable variable=PR_LABEL]${PR_LABEL}"
                     else
