@@ -1,12 +1,14 @@
-- name: remove old pr portal apis
+- name: remove target portal apis
   hosts: 127.0.0.1
   connection: local
   gather_facts: yes
 
   vars:
-    APIGEE_ENVIRONMENT: "internal-dev"
+    APIGEE_ENVIRONMENT: "{{ lookup('env', 'APIGEE_ENVIRONMENT') }}" 
     APIGEE_ORGANIZATION: "{{ lookup('env', 'APIGEE_ORGANIZATION') }}"
     APIGEE_ACCESS_TOKEN: "{{ lookup('env', 'APIGEE_ACCESS_TOKEN') }}"
+    SERVICE_NAME: "{{ lookup('env', 'SERVICE_NAME') }}" 
+    SERVICE_NAME_SHORT: "{{ lookup('env', 'SERVICE_NAME_SHORT') }}"  
 
   pre_tasks:
     - name: check APIGEE_ORGANIZATION
@@ -20,4 +22,4 @@
       when: not APIGEE_ACCESS_TOKEN
 
   roles:
-    - remove-old-pr-portal-apis
+    - remove-target-portal-apis

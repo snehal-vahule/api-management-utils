@@ -22,7 +22,7 @@
 
 - name: create product map
   set_fact:
-    product_app_map: "{{ get_apps.json.app | apigee_apps_to_product_map(product_filter='.*-pr-[0-9]+.*') }}"
+    product_app_map: "{{ get_apps.json.app | apigee_apps_to_product_map(product_filter={{ SERVICE_NAME }}) }}"
 
 - name: get products
   uri:
@@ -34,10 +34,10 @@
 
 - name: filter products
   set_fact:
-    pr_products: "{{  products.json | select('match', '.*-pr-[0-9]+.*') }}"
+    target_products: "{{  products.json | select('match', {{ SERVICE_NAME }} ) }}"
 
-- name: remove pr products
+- name: remove target products
   include_tasks: remove-product.yml
-  loop: "{{ pr_products }}"
+  loop: "{{ target_products }}"
   loop_control:
     loop_var: "product_slug"

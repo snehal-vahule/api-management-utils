@@ -10,18 +10,14 @@
   set_fact:
     spec_filter: "{{ specs.json.contents | to_json | from_json | json_query(item) }}"
   with_items: 
-    - "[?contains(name, '-pr-')]"
-    - "[?contains(name, '-apm-')]"
-    - "[?contains(name, '-aea-')]"
-    - "[?contains(name, '-adz-')]"
-    - "[?contains(name, '-apmspii-')]"
-    - "[?contains(name, '-dependabot-')]"
+    - "[?contains(apiId, {{ SERVICE_NAME }} )]"
+    - "[?contains(apiId, {{ SERVICE_NAME_SHORT }} )]"
   register: search_result
 
 - name: make a list and set portal_api
   set_fact:
-    pr_specs: "{{ search_result.results | map(attribute='ansible_facts.spec_filter') | list | flatten }}"
+    target_specs: "{{ search_result.results | map(attribute='ansible_facts.spec_filter') | list | flatten }}"
 
 - name: determine whether to remove
   include_tasks: remove-target-spec.yml
-  loop: "{{ pr_specs }}"
+  loop: "{{ target_specs }}"
