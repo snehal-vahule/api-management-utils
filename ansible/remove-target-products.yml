@@ -1,4 +1,4 @@
-- name: remove old pr portal apis
+- name: remove target portal apis
   hosts: 127.0.0.1
   connection: local
   gather_facts: yes

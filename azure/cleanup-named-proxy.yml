@@ -112,35 +112,3 @@ jobs:
           export retain_hours=72
           ANSIBLE_FORCE_COLOR=yes make -C ansible remove-target-proxies
         displayName: "cleanup target proxies"
-
-## TODO
-# Change each step to not pr - DONE
-# Create each step in makefile - DONE
-# Create each playbook - DONE
-# Create each role - DONE
-# Edit each role to fit the new purpose
-#    -portal-apis
-#    -products
-#    -proxies
-#    -specs
-#
-## Things to check
-# Check the steps are appropriate/accurate
-# Check to see if APIGEE_ORGANIZATION will work with "nhsd-$org" (changed from coded nonprod)
-# Check to see if retain_hours will still be needed (if we end up removing all commented bits - it will not be needed)
-# Left out remove-old-auto-products and remove-old-auto-apps for now - was this correct? (auto-apps reffed in ACs)
-# The matching of the service name (roles/tasks/main.yml) -- will this match exactly? will need to add a -* ?
-# Similarly ^ remove_target_products used 'proper' regex (l25 l37) -- this will need to map/filter agaisnt SERVICE_NAME and SERVICE_NAME_SHORT idk how to do this.
-# Extra similarly to ^ in remove_target_proxies regex again (l12 l24) -- same as ^ 
-#
-## Acceptance Criteria
-#    Create a pipeline to clean up a specified proxy
-#    Should include multiple params which could include
-#        service name
-#        service short name
-#        has_ecs_backend
-#        environment
-#    Should have 'prod approval' on prod
-#    If removing from subscriped apps should also require approval
-#    Should be used to clean up the 'geneterated template api'
-#    Create KOP on how to use
