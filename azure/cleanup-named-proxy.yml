@@ -77,38 +77,5 @@ jobs:
           export APIGEE_ORGANIZATION="nhsd-$org"
           export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
           export retain_hours=72
-          ANSIBLE_FORCE_COLOR=yes make -C ansible remove-target-portal-apis
+          ANSIBLE_FORCE_COLOR=yes make -C ansible remove-target-proxy
         displayName: "cleanup target portal apis"
-
-      - bash: |
-          export SERVICE_NAME="$(service_name)"
-          export SERVICE_NAME_SHORT="$(service_name_short)"
-          export has_ecs_backend="$(has_ecs_backend)"
-          export APIGEE_ENVIRONMENT="$(environment)"
-          export APIGEE_ORGANIZATION="nhsd-$org"
-          export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
-          export retain_hours=72
-          ANSIBLE_FORCE_COLOR=yes make -C ansible remove-target-specs
-        displayName: "cleanup target specs"
-
-      - bash: |
-          export SERVICE_NAME="$(service_name)"
-          export SERVICE_NAME_SHORT="$(service_name_short)"
-          export has_ecs_backend="$(has_ecs_backend)"
-          export APIGEE_ENVIRONMENT="$(environment)"
-          export APIGEE_ORGANIZATION="nhsd-$org"
-          export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
-          export retain_hours=72
-          ANSIBLE_FORCE_COLOR=yes make -C ansible remove-target-products
-        displayName: "cleanup target products"
-
-      - bash: |
-          export SERVICE_NAME="$(service_name)"
-          export SERVICE_NAME_SHORT="$(service_name_short)"
-          export has_ecs_backend="$(has_ecs_backend)"
-          export APIGEE_ENVIRONMENT="$(environment)"
-          export APIGEE_ORGANIZATION="nhsd-$org"
-          export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
-          export retain_hours=72
-          ANSIBLE_FORCE_COLOR=yes make -C ansible remove-target-proxies
-        displayName: "cleanup target proxies"
