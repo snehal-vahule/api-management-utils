@@ -1,17 +1,10 @@
 name: "$(SourceBranchName)+$(BuildID)"
 
 trigger: none
+
 pr: none
 
 parameters:
-  - name: org
-    displayName: Organisation of target proxy
-    type: string
-    default: nonprod
-    values:
-    - nonprod
-    - prod
-
   - name: service_name
     displayName: Name of service to be removed
     type: string
@@ -31,51 +24,27 @@ parameters:
     type: string
     default: ""
 
-
-jobs:
-  - job: build
-    displayName: Cleanup Named Proxy
-    timeoutInMinutes: 240
-    pool:
-      name: 'AWS-ECS'
-
-    workspace:
-      clean: all
-
-    steps:
-
-      - checkout: self
-
-      - bash: |
-          instance_id="$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
-          echo instance-id: "${instance_id}"
-          echo connect to: https://eu-west-2.console.aws.amazon.com/systems-manager/session-manager/${instance_id}
-          echo sudo su - ubuntu
-          or
-          echo ssh ubuntu@${instance_id}
-          echo working directory: $(System.DefaultWorkingDirectory)
-        displayName: print aws info
-
-      - template: ./components/aws-assume-role.yml
+stages:
+  - ${{ if in(parameters.env, 'internal-qa', 'ref', 'internal-qa-sandbox', 'internal-dev-sandbox', 'internal-dev') }}:
+      - template: ./components/cleanup-proxy-choose-approval.yml
         parameters:
-          role: "auto-ops"
-          profile: "apm_ptl"
+          apigee_org: nonprod         
+          aws_account: ptl
+          aws_profile: apm_ptl
+          service_name: ${{ service_name }}
+          service_name_short: ${{ service_name_short }}
+          has_ecs_backed: ${{ has_ecs_backend }}
+          APIGEE_ENVIRONMENT: ${{ environment }}
+          APIGEE_ACCESS_TOKEN: $(secret.AccessToken)
 
-      - bash: |
-          tfenv use 0.14.6
-        displayName: setup terraform
-
-      - bash: |
-          make install
-        displayName: install dependencies
-
-      - bash: |
-          export SERVICE_NAME="$(service_name)"
-          export SERVICE_NAME_SHORT="$(service_name_short)"
-          export has_ecs_backend="$(has_ecs_backend)"
-          export APIGEE_ENVIRONMENT="$(environment)"
-          export APIGEE_ORGANIZATION="nhsd-$org"
-          export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"
-          export retain_hours=72
-          ANSIBLE_FORCE_COLOR=yes make -C ansible remove-target-proxy
-        displayName: "cleanup target portal apis"
+  - ${{ if in(parameters.env, 'dev', 'int', 'sandbox', 'prod') }}:
+      - template: ./components/cleanup-proxy-choose-approval.yml
+        parameters:
+          apigee_org: prod
+          aws_account: prod
+          aws_profile: apm_prod
+          service_name: ${{ service_name }}
+          service_name_short: ${{ service_name_short }}
+          has_ecs_backed: ${{ has_ecs_backend }}
+          APIGEE_ENVIRONMENT: ${{ environment }}
+          APIGEE_ACCESS_TOKEN: $(secret.AccessToken)

@@ -1,0 +1,61 @@
+parameters:
+  - name: apigee_org
+    type: string
+  - name: aws_account
+    type: string
+  - name: aws_profile
+    type: string
+  - name: service_name
+    type: string
+  - name: service_name_short
+    type: string
+  - name: has_ecs_backend
+    type: boolean
+  - name: APIGEE_ENVIRONMENT
+    type: string
+  - name: APIGEE_ACCESS_TOKEN
+    type: string
+
+steps:
+  - checkout: self
+  - template: ./print-aws-info.yml
+
+  - bash: make install
+    displayName: Install project dependencies
+
+  - template: ./aws-assume-role.yml
+    parameters:
+      role: auto-ops
+      aws_account: ${{ parameters.aws_account }}
+      profile: ${{ parameters.aws_profile }}
+
+  - bash: |
+      tfenv use 0.14.6
+    displayName: setup terraform
+
+  - template: ./get-aws-secrets-and-ssm-params.yml
+    parameters:
+      secret_ids:
+        - ${{ parameters.aws_account }}/azure-devops/apigee-${{ parameters.apigee_org }}/APIGEE_OTP_KEY
+        - ${{ parameters.aws_account }}/azure-devops/apigee-${{ parameters.apigee_org }}/APIGEE_PASSWORD
+      config_ids:
+        - /${{ parameters.aws_account }}/azure-devops/apigee-${{ parameters.apigee_org }}/APIGEE_USERNAME
+      aws_profile: ${{ parameters.aws_profile }}
+
+  - template: ./get-access-token.yml 
+    parameters:
+      apigee_username: $(APIGEE_USERNAME)
+      apigee_password: $(APIGEE_PASSWORD)
+
+  - bash: |
+      set -euo pipefail
+      export SERVICE_NAME="$(service_name)"
+      export SERVICE_NAME_SHORT="$(service_name_short)"
+      export has_ecs_backend="$(has_ecs_backend)"
+      export APIGEE_ENVIRONMENT="$(APIGEE_ENVIRONMENT)"
+      export APIGEE_ORGANIZATION="$(apigee_org)"
+      export APIGEE_ACCESS_TOKEN="$(APIGEE_ACCESS_TOKEN)"
+#      export retain_hours=72
+      ANSIBLE_FORCE_COLOR=yes make -C ansible remove-target-proxy
+    displayName: "Cleanup target portal apis"
+ 

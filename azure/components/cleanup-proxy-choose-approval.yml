@@ -1,0 +1,72 @@
+parameters:
+  - name: apigee_org
+    type: string
+  - name: aws_account
+    type: string
+  - name: aws_profile
+    type: string
+  - name: service_name
+    type: string
+  - name: service_name_short
+    type: string
+  - name: has_ecs_backend
+    type: boolean
+  - name: APIGEE_ENVIRONMENT
+    type: string
+  - name: APIGEE_ACCESS_TOKEN
+    type: string
+
+stages:
+  - ${{ if eq(parameters.apigee_org, 'nonprod') }}:
+    - stage: ${{ parameters.apigee_org }}
+      displayName: Cleanup ${{ parameters.service_name }} / ${{ parameters.service_name_short }} proxy in ${{ parameters.apigee_org }} org
+      dependsOn: []
+      jobs:
+        - job: build
+          displayName: Find and remove all components for ${{ parameters.service_name }} / ${{ parameters.service_name_short }} proxy in ${{ parameters.apigee_org }} app/apps
+          timeoutInMinutes: 40
+          pool:
+            name: AWS-ECS
+          workspace:
+            clean: all
+          steps:
+          - template: ./remove-target-proxy.yml
+            parameters:
+              apigee_org: ${{ parameters.apigee_org }}
+              aws_account: ${{ parameters.aws_account }}
+              aws_profile: ${{ parameters.aws_profile }}
+              service_name: ${{ parameters.service_name }}
+              service_name_short: ${{ parameters.service_name_short }}
+              has_ecs_backend: ${{ parameters.has_ecs_backend }}
+              APIGEE_ENVIRONMENT: ${{ parameters.APIGEE_ENVIRONMENT }}
+              APIGEE_ACCESS_TOKEN: ${{ parameters.APIGEE_ACCESS_TOKEN }}
+
+  - ${{ if eq(parameters.apigee_org, 'prod') }}:
+    - stage: ${{ parameters.apigee_org }}
+      displayName: Restore app/apps in ${{ parameters.apigee_org }} org
+      dependsOn: []
+      jobs:
+        - deployment: build
+          displayName: Find and remove all components for ${{ parameters.service_name }} / ${{ parameters.service_name_short }} proxy in ${{ parameters.apigee_org }} app/apps 
+          timeoutInMinutes: 40
+          pool:
+            name: AWS-ECS
+          environment: "infrastructure-approval-prod"
+          workspace:
+            clean: all
+          strategy:
+            runOnce:
+              deploy:
+                steps:
+                - template: ./remove-target-proxy.yml
+                  parameters:
+                    apigee_org: ${{ parameters.apigee_org }}
+                    aws_account: ${{ parameters.aws_account }}
+                    aws_profile: ${{ parameters.aws_profile }}
+                    service_name: ${{ parameters.service_name }}
+                    service_name_short: ${{ parameters.service_name_short }}
+                    has_ecs_backend: ${{ parameters.has_ecs_backend }}
+                    APIGEE_ENVIRONMENT: ${{ parameters.APIGEE_ENVIRONMENT }}
+                    APIGEE_ACCESS_TOKEN: ${{ parameters.APIGEE_ACCESS_TOKEN }}
+
+ 
