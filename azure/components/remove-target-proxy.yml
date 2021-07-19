@@ -53,7 +53,6 @@ steps:
       export APIGEE_ENVIRONMENT="$(APIGEE_ENVIRONMENT)"
       export APIGEE_ORGANIZATION="$(apigee_org)"
       export APIGEE_ACCESS_TOKEN="$(APIGEE_ACCESS_TOKEN)"
-#      export retain_hours=72
-      ANSIBLE_FORCE_COLOR=yes make -C ansible remove-target-proxy
+      make -C ansible remove-target-proxy
     displayName: "Cleanup target portal apis"
  
