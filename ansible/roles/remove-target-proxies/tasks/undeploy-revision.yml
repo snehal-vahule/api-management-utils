@@ -28,6 +28,7 @@
       loop_var: "env"
       label: "undeploy - {{ env }}:{{ api_slug }}:{{ revision }}"
     changed_when: yes
+    when: not ansible_check_mode
 
   rescue:
     - fail:

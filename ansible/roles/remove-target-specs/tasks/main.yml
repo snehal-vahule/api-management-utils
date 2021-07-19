@@ -22,3 +22,4 @@
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
   changed_when: yes
+  when: not ansible_check_mode

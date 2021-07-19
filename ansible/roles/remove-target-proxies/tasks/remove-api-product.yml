@@ -21,3 +21,4 @@
     method: PUT
     return_content: yes
   changed_when: yes
+  when: not ansible_check_mode

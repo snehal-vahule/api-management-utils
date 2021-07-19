@@ -30,9 +30,9 @@
     - remove-target-proxies
     - remove-target-specs 
 
-  include_role:
-    name: '{{ item }}'
-    with_items:
-      - "{{ setup-facts }}"
-      - "{{ remove-target-ecs-backend }}"
-  when: has_ecs_backend 
+#  include_role:
+#    name: '{{ item }}'
+#    with_items:
+#      - "{{ setup-facts }}"
+#      - "{{ remove-target-ecs-backend }}"
+#  when: has_ecs_backend 
