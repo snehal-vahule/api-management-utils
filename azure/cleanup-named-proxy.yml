@@ -18,7 +18,7 @@ parameters:
   - name: has_ecs_backend
     displayName: Target service has ecs backend
     type: boolean
-    default: false
+    default: False
 
   - name: environment
     displayName: Name of target environment
