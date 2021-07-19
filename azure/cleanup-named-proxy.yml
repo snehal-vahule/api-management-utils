@@ -32,7 +32,7 @@ stages:
           apigee_org: nonprod         
           service_name: ${{ parameters.service_name }}
           service_name_short: ${{ parameters.service_name_short }}
-          has_ecs_backed: ${{ parameters.has_ecs_backend }}
+          has_ecs_backend: ${{ parameters.has_ecs_backend }}
           APIGEE_ENVIRONMENT: ${{ parameters.environment }}
 
   - ${{ if in(parameters.environment, 'dev', 'int', 'sandbox', 'prod') }}:
@@ -41,5 +41,5 @@ stages:
           apigee_org: prod
           service_name: ${{ parameters.service_name }}
           service_name_short: ${{ parameters.service_name_short }}
-          has_ecs_backed: ${{ parameters.has_ecs_backend }}
+          has_ecs_backend: ${{ parameters.has_ecs_backend }}
           APIGEE_ENVIRONMENT: ${{ parameters.environment }}
