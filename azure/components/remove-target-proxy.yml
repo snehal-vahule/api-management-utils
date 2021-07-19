@@ -38,7 +38,7 @@ steps:
         - ${{ parameters.aws_account }}/azure-devops/apigee-${{ parameters.apigee_org }}/APIGEE_PASSWORD
       config_ids:
         - /${{ parameters.aws_account }}/azure-devops/apigee-${{ parameters.apigee_org }}/APIGEE_USERNAME
-      aws_profile: ${{ parameters.aws_profile }}
+      aws_account: ${{ parameters.aws_account }}
 
   - template: ./get-access-token.yml 
     parameters:
