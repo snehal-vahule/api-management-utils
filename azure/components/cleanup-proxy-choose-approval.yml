@@ -1,10 +1,6 @@
 parameters:
   - name: apigee_org
     type: string
-  - name: aws_account
-    type: string
-  - name: aws_profile
-    type: string
   - name: service_name
     type: string
   - name: service_name_short
@@ -12,8 +8,6 @@ parameters:
   - name: has_ecs_backend
     type: boolean
   - name: APIGEE_ENVIRONMENT
-    type: string
-  - name: APIGEE_ACCESS_TOKEN
     type: string
 
 stages:
@@ -33,13 +27,12 @@ stages:
           - template: ./remove-target-proxy.yml
             parameters:
               apigee_org: ${{ parameters.apigee_org }}
-              aws_account: ${{ parameters.aws_account }}
-              aws_profile: ${{ parameters.aws_profile }}
+              aws_account: ptl
+              aws_profile: apm_ptl
               service_name: ${{ parameters.service_name }}
               service_name_short: ${{ parameters.service_name_short }}
               has_ecs_backend: ${{ parameters.has_ecs_backend }}
               APIGEE_ENVIRONMENT: ${{ parameters.APIGEE_ENVIRONMENT }}
-              APIGEE_ACCESS_TOKEN: ${{ parameters.APIGEE_ACCESS_TOKEN }}
 
   - ${{ if eq(parameters.apigee_org, 'prod') }}:
     - stage: ${{ parameters.apigee_org }}
@@ -61,12 +54,11 @@ stages:
                 - template: ./remove-target-proxy.yml
                   parameters:
                     apigee_org: ${{ parameters.apigee_org }}
-                    aws_account: ${{ parameters.aws_account }}
-                    aws_profile: ${{ parameters.aws_profile }}
+                    aws_account: prod
+                    aws_profile: apm_prod
                     service_name: ${{ parameters.service_name }}
                     service_name_short: ${{ parameters.service_name_short }}
                     has_ecs_backend: ${{ parameters.has_ecs_backend }}
                     APIGEE_ENVIRONMENT: ${{ parameters.APIGEE_ENVIRONMENT }}
-                    APIGEE_ACCESS_TOKEN: ${{ parameters.APIGEE_ACCESS_TOKEN }}
 
  

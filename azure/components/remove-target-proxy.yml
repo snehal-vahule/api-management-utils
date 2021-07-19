@@ -13,8 +13,6 @@ parameters:
     type: boolean
   - name: APIGEE_ENVIRONMENT
     type: string
-  - name: APIGEE_ACCESS_TOKEN
-    type: string
 
 steps:
   - checkout: self

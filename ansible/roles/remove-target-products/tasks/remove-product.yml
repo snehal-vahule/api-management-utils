@@ -11,34 +11,6 @@
   set_fact:
     product: "{{ get_product.json }}"
 
-#- name: "parse last modified {{ product_slug }}"
-#  set_fact:
-#    should_remove: >-
-#      {{
-#        (
-#          (
-#            (ansible_date_time.epoch | int) - (product.lastModifiedAt / 1000)
-#          ) / 3600
-#        ) >= (retain_hours | int)
-#      }}
-#    age_hours: >-
-#      {{
-#        (
-#          (
-#            (ansible_date_time.epoch | int) - (product.lastModifiedAt / 1000)
-#          ) / 3600
-#        )
-#      }}
-
-- name: "debug vars {{ product_slug }}"
-  debug:
-    msg:
-      - "product, {{ product_slug }}"
-#      - "modified at, {{ product.lastModifiedAt / 1000 }}"
-#      - "current_date, {{ ansible_date_time.epoch | int }}"
-#      - "age_hours, {{ age_hours }}"
-#      - "should remove,  {{ should_remove }}"
-
 - block:
   - name: "remove product apps {{ product_slug }}"
     uri:
@@ -59,5 +31,4 @@
         Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     changed_when: yes
 
-  #when: should_remove
 

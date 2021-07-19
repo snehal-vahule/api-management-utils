@@ -22,16 +22,18 @@
 
 - name: set portal_filter
   set_fact:
-    portal_filter: "{{ apidocs.json.data | to_json | from_json | json_query(item) }}"
-  with_items: 
-    - "[?contains(apiId, {{ SERVICE_NAME }} )]"
-    - "[?contains(apiId, {{ SERVICE_NAME_SHORT }} )]"
+    portal_filter: "{{ apidocs.json.data | to_json | from_json | json_query(regex) }}"
   register: search_result
 
 - name: make a list and set portal_api
   set_fact:
     portal_apis: "{{ search_result.results | map(attribute='ansible_facts.portal_filter') | list | flatten }}"
 
-- name: determine whether to remove
-  include_tasks: remove-target-portal-api.yml
-  loop: "{{ portal_apis }}"
+- name: "remove portal api {{ item.apiId }}"
+  uri:
+    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ item.id }}"
+    method: DELETE
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+  changed_when: yes
+

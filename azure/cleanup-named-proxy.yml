@@ -18,6 +18,7 @@ parameters:
   - name: has_ecs_backend
     displayName: Target service has ecs backend
     type: boolean
+    default: false
 
   - name: environment
     displayName: Name of target environment
@@ -29,22 +30,16 @@ stages:
       - template: ./components/cleanup-proxy-choose-approval.yml
         parameters:
           apigee_org: nonprod         
-          aws_account: ptl
-          aws_profile: apm_ptl
-          service_name: ${{ service_name }}
-          service_name_short: ${{ service_name_short }}
-          has_ecs_backed: ${{ has_ecs_backend }}
-          APIGEE_ENVIRONMENT: ${{ environment }}
-          APIGEE_ACCESS_TOKEN: $(secret.AccessToken)
+          service_name: ${{ parameters.service_name }}
+          service_name_short: ${{ parameters.service_name_short }}
+          has_ecs_backed: ${{ parameters.has_ecs_backend }}
+          APIGEE_ENVIRONMENT: ${{ parameters.environment }}
 
   - ${{ if in(parameters.environment, 'dev', 'int', 'sandbox', 'prod') }}:
       - template: ./components/cleanup-proxy-choose-approval.yml
         parameters:
           apigee_org: prod
-          aws_account: prod
-          aws_profile: apm_prod
-          service_name: ${{ service_name }}
-          service_name_short: ${{ service_name_short }}
-          has_ecs_backed: ${{ has_ecs_backend }}
-          APIGEE_ENVIRONMENT: ${{ environment }}
-          APIGEE_ACCESS_TOKEN: $(secret.AccessToken)
+          service_name: ${{ parameters.service_name }}
+          service_name_short: ${{ parameters.service_name_short }}
+          has_ecs_backed: ${{ parameters.has_ecs_backend }}
+          APIGEE_ENVIRONMENT: ${{ parameters.environment }}

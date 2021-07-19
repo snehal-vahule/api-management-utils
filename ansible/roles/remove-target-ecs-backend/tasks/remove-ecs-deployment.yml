@@ -1,0 +1,11 @@
+
+- name: extract vars
+  set_fact:
+    apigee_environment: "{{ ns_service_tuple.0 }}"
+    namespaced_name: "{{ ns_service_tuple.1 }}"
+    service_id: "{{  ns_service_tuple.2 }}"
+    pr_number: "{{ ns_service_tuple.1 |  regex_replace('^' + ns_service_tuple.2 + '-', '')  }}"
+
+- name: "remove target ecs service {{ apigee_environment }} - {{ service_id }}"
+  include_role:
+    name: destroy-ecs-proxies
