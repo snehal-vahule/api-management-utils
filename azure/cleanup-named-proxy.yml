@@ -25,7 +25,7 @@ parameters:
     default: ""
 
 stages:
-  - ${{ if in(parameters.env, 'internal-qa', 'ref', 'internal-qa-sandbox', 'internal-dev-sandbox', 'internal-dev') }}:
+  - ${{ if in(parameters.environment, 'internal-qa', 'ref', 'internal-qa-sandbox', 'internal-dev-sandbox', 'internal-dev') }}:
       - template: ./components/cleanup-proxy-choose-approval.yml
         parameters:
           apigee_org: nonprod         
@@ -37,7 +37,7 @@ stages:
           APIGEE_ENVIRONMENT: ${{ environment }}
           APIGEE_ACCESS_TOKEN: $(secret.AccessToken)
 
-  - ${{ if in(parameters.env, 'dev', 'int', 'sandbox', 'prod') }}:
+  - ${{ if in(parameters.environment, 'dev', 'int', 'sandbox', 'prod') }}:
       - template: ./components/cleanup-proxy-choose-approval.yml
         parameters:
           apigee_org: prod

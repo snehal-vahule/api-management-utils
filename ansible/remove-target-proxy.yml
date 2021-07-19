@@ -9,6 +9,8 @@
     APIGEE_ACCESS_TOKEN: "{{ lookup('env', 'APIGEE_ACCESS_TOKEN') }}"
     SERVICE_NAME: "{{ lookup('env', 'SERVICE_NAME') }}" 
     SERVICE_NAME_SHORT: "{{ lookup('env', 'SERVICE_NAME_SHORT') }}"  
+    regex: "{{ $SERVICE_NAME-$APIGEE_ENVIRONMENT | $SERVICE_NAME_SHORT-$APIGEE_ENVIRONMENT }}"
+    has_ecs_backend: "{{ lookup('env', 'has_ecs_backend') }}"
 
   pre_tasks:
     - name: check APIGEE_ORGANIZATION
@@ -26,3 +28,7 @@
     - remove-target-products
     - remove-target-proxies
     - remove-target-specs 
+
+#  include_role:
+#    name: remove-target-ecs-backend
+#  when: has_ecs_backend 

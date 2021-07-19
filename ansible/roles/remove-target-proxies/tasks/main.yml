@@ -9,11 +9,7 @@
 
 - name: filter apis
   set_fact:
-    api_products_map: "{{ get_products.json.apiProduct | apigee_products_to_api_map(proxy_filter=item) }}"
-  with_items:
-    - "{{ SERVICE_NAME }}"
-    - "{{ SERVICE_NAME_SHORT }}"
-
+    api_products_map: "{{ get_products.json.apiProduct | apigee_products_to_api_map(proxy_filter=regex) }}"
 
 - name: "get apis"
   uri:
@@ -25,11 +21,7 @@
 
 - name: filter apis
   set_fact:
-    target_apis: "{{  get_apis.json | select('match', item) }}"
-  with_items:
-    - "{{ SERVICE_NAME }}"
-    - "{{ SERVICE_NAME_SHORT }}"
-
+    target_apis: "{{  get_apis.json | select('match', regex) }}"
 
 - name: remove target apis
   include_tasks: remove-api.yml
