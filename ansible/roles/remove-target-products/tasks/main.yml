@@ -42,8 +42,8 @@
   set_fact:
     target_products: "{{  products.json | select('match', service_name_env) }}"
 
-- name: remove target products
-  include_tasks: remove-product.yml
-  loop: "{{ target_products }}"
-  loop_control:
-    loop_var: "product_slug"
+#- name: remove target products
+#  include_tasks: remove-product.yml
+#  loop: "{{ target_products }}"
+#  loop_control:
+#    loop_var: "product_slug"
