@@ -27,8 +27,8 @@
 - debug:
     msg: "{{ product_app_map }}"
 
-- name: Fail pipeline if product HAS apps 
-  failed_when: product_app_map != ""
+#- name: Fail pipeline if product HAS apps 
+#  failed_when: product_app_map != ""
 
 - name: get products
   uri:
