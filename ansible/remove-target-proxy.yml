@@ -37,14 +37,14 @@
     - debug:
         msg: "{{ has_ecs_backend }} - {{ force_remove_from_apps }} - {{ SERVICE_NAME }}"
 
-#    - name: remove ecs backend
-#      include_role:
-#        name: "{{ item }}"
-#      with_items:
-#        - "{{ setup-facts }}"
-#        - "{{ remove-target-ecs-backend }}"
-#        - "{{ destroy-api-deployment-pre-reqs }}"
-#      when: "{{ has_ecs_backend }}" == "True"
+    - name: remove ecs backend
+      include_role:
+        name: "{{ item }}"
+      with_items:
+        - "{{ setup-facts }}"
+        - "{{ remove-target-ecs-backend }}"
+        - "{{ destroy-api-deployment-pre-reqs }}"
+      when: "{{ has_ecs_backend }}" == "True"
 
 
 #  include_role:
