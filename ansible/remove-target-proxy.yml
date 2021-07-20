@@ -29,8 +29,8 @@
 
   roles:
 #    - remove-target-products
-    - remove-target-portal-apis
-#    - remove-target-proxies
+#    - remove-target-portal-apis
+    - remove-target-proxies
 #    - remove-target-specs 
 
 #  include_role:
