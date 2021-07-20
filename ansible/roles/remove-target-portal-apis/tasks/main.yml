@@ -37,7 +37,7 @@
 - debug:
     msg: "{{ portal_apis }}"
 
-- name: remove portal api "{{ portal_apis.apiId }}"
+- name: remove portal api
   uri:
     url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ portal_apis.id }}"
     method: DELETE
