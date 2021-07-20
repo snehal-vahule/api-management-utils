@@ -297,11 +297,13 @@ steps:
             exit 1
           fi
         fi
-  - $ {{else}}:
+      displayName: 'Set ping endpoint monitoring'
+
+  - ${{ if eq(parameters.enable_monitoring, false) }}:
     - bash :
         echo "_ping endpoint monitoring is disabled"
         echo "##vso[task.setvariable variable=set_ping_monitoring]false"
-      displayName: 'Check ping monitoring'
+      displayName: 'Set ping endpoint monitoring'
 
   - ${{ if eq(parameters.enable_status_monitoring, true) }}:
     - bash: |
@@ -331,12 +333,10 @@ steps:
           export is_pull_request=false
         fi
 
-        if [[ $(status_endpoint_response) == "200" ]]; then
+        if [[ $(status_endpoint_response) == "200" || $(status_endpoint_response) == "503" ]]; then
           if [[ $is_pull_request == 'true' ]]; then
             echo "_status endpoint is present in the proxy, however we dont monitor pull requests"
             echo "##vso[task.setvariable variable=set_status_monitoring]false"   
-          else if [[ $(status_endpoint_response) == "503" ]]; then
-            echo "503 status returned"
           else
             echo "_status endpoint is present in the proxy, we will enable monitoring by default"
             echo "##vso[task.setvariable variable=set_status_monitoring]true"
@@ -346,15 +346,18 @@ steps:
             echo "WARNING: Please add a _status endpoit to your proxy before releasing or your release will fail. Or use the flag 'enable_status_monitoring=false' if your API don't support _status healthcheck" 
             echo "##vso[task.setvariable variable=set_status_monitoring]false"   
           else
-            echo "ERROR: Your proxy dont have a _status endpoint therefore we can't monitor this proxy and it should not be released"
+            echo "ERROR: Your proxy dont have a _status endpoint therefore we can't monitor this proxy and it should not be released, use the flag 'enable_status_monitoring=false' if your API don't support _status healthcheck"
             exit 1
           fi 
         fi
-  - $ {{else}}:
+      displayName: 'Set status endpoint monitoring'
+
+
+  - ${{ if eq(parameters.enable_status_monitoring, false) }}:
     - bash :
         echo "_status endpoint monitoring is disabled"
         echo "##vso[task.setvariable variable=set_status_monitoring]false"
-      displayName: 'Check status monitoring'
+      displayName: 'Set status endpoint monitoring'
 
   - bash: |
       set -euo pipefail
