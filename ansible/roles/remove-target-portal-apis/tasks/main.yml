@@ -35,10 +35,10 @@
     portal_apis: "{{ search_result.results | map(attribute='ansible_facts.portal_filter') | list | flatten }}"
 
 - debug:
-    msg: "{{ portal_apis[0] }}"
+    msg: "{{ portal_apis[0].id }}"
 
 - debug:
-    msg: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ portal_apis[0] }}"
+    msg: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ portal_apis[0].id }}"
   
 #- name: remove portal api
 #  uri:
