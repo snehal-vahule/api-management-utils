@@ -27,6 +27,10 @@
         msg: "APIGEE_ACCESS_TOKEN not set"
       when: not APIGEE_ACCESS_TOKEN
 
+    - name: print force_remove_apps
+      debug:
+        msg: "{{ force_remove_apps }}"
+
   roles:
     - remove-target-products
 #    - remove-target-portal-apis
