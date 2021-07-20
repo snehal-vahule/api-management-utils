@@ -34,21 +34,11 @@
   set_fact:
     portal_apis: "{{ search_result.results | map(attribute='ansible_facts.portal_filter') | list | flatten }}"
   
-- debug:
-    msg: "{{ portal_apis }}"
-
-- name: set portal_api
-  set_fact:
-    portal_api: "{{ portal_apis[0] }}"
-
-- debug:
-    msg: "{{ portal_api }}"
-
-#- name: remove portal api
-#  uri:
-#    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ portal_apis.id }}"
-#    method: DELETE
-#    headers:
-#      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
-#  changed_when: yes
+- name: remove portal api
+  uri:
+    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ portal_apis.[0] }}"
+    method: DELETE
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+  changed_when: yes
 
