@@ -42,11 +42,6 @@ steps:
         - /${{ parameters.aws_account }}/azure-devops/apigee-${{ parameters.apigee_org }}/APIGEE_USERNAME
       aws_account: ${{ parameters.aws_account }}
 
- # - template: ./get-access-token.yml 
- #   parameters:
- #     apigee_username: $(APIGEE_USERNAME)
- #     apigee_password: $(APIGEE_PASSWORD)
-
   - bash: |
       export MFA_CODE=`oathtool --totp -b "$(APIGEE_OTP_KEY)"`
       # basic auth value here is an apigee public value .. https://docs.apigee.com/api-platform/system-administration/management-api-tokens  (not secret)
@@ -65,7 +60,7 @@ steps:
       export SERVICE_NAME_SHORT="${{ parameters.service_name_short }}"
       export has_ecs_backend="${{ parameters.has_ecs_backend }}"
       export APIGEE_ENVIRONMENT="${{ parameters.APIGEE_ENVIRONMENT }}"
-      export APIGEE_ORG="${{ parameters.apigee_org }}"
+      export APIGEE_ORG="nhsd-${{ parameters.apigee_org }}"
       export APIGEE_ACCESS_TOKEN="$(secret.${{ parameters.apigee_org }}_API_ACCESS_TOKEN)"
       export remove_ecs_build_role="${{ parameters.remove_ecs_build_role }}"
       ANSIBLE_FORCE_COLOR=yes make -C ansible remove-target-proxy
