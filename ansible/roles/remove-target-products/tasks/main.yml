@@ -20,6 +20,12 @@
     timeout: 90
   register: get_apps
 
+- debug:
+    msg: "£{{ force_remove_apps }}£"
+
+- debug:
+    msg: "{{ force_remove_apps == 'False' }}"
+
 
 - name: Check for subscribed apps
   set_fact:
@@ -38,8 +44,8 @@
   set_fact:
     target_products: "{{  products.json | select('match', service_name_env) }}"
 
-- name: remove target products
-  include_tasks: remove-product.yml
-  loop: "{{ target_products }}"
-  loop_control:
-    loop_var: "product_slug"
+#- name: remove target products
+#  include_tasks: remove-product.yml
+#  loop: "{{ target_products }}"
+#  loop_control:
+#    loop_var: "product_slug"
