@@ -35,6 +35,12 @@
     return_content: yes
   register: products
 
+- debug:
+    msg: "{{ products }}"
+
+- debug:
+    msg: "{{ service_name_env }}"
+
 - name: filter products
   set_fact:
     target_products: "{{  products.json | select('match', service_name_env) }}"
