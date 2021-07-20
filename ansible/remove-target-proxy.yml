@@ -36,7 +36,7 @@
   tasks:
     - debug:
         msg: "{{ has_ecs_backend }}"
-      when: has_ecs_backend is 'True'
+      when: has_ecs_backend == "True"
 
 #    - name: remove ecs backend
 #      include_role:
