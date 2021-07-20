@@ -10,13 +10,6 @@
   set_fact:
     ns_service_tuples: "{{ (get_service_namespaced_services.stdout) | from_json }}"
 
-- name: select target service tuple
-  set_fact:
-    target_service_tuple: "{{ ns_service_tuples | select(item[2], service_name_env) | list }}"
-
-- debug:
-    msg: "{{ target_service_tuple }}"
-
 - name: get terraform version
   command: terraform --version
   register: terraform_version
@@ -24,8 +17,8 @@
 - name: print terraform version
   debug: msg="{{ terraform_version.stdout }}"
 
-#- name: maybe remove deployment
-#  include: remove-ecs-deployment.yml
-#  with_list: "{{ ns_service_tuples }}"
-#  loop_control:
-#    loop_var: ns_service_tuple
+- name: maybe remove deployment
+  include: remove-ecs-deployment.yml
+  with_list: "{{ ns_service_tuples }}"
+  loop_control:
+    loop_var: ns_service_tuple

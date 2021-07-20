@@ -1,102 +1,105 @@
 
-- name: print workspace
-  debug: msg="workspace - {{ workspace }}"
+- debug:
+    msg: "yes we are here!"
 
-- name: scale down
-  command: >
-    {{ aws_cmd }} ecs update-service --cluster apis-{{ apigee_environment }}
-    --service {{ namespaced_name }} --desired-count 0
-  register: scale_down
-  changed_when: yes
-  failed_when: scale_down.rc != 0 and 'ServiceNotActiveException' not in scale_down.stderr and 'ServiceNotFoundException' not in scale_down.stderr
+# - name: print workspace
+#   debug: msg="workspace - {{ workspace }}"
 
-- name: wait for graceful stop
-  pause:
-    seconds: 20
-  when: scale_down.rc == 0
+# - name: scale down
+#   command: >
+#     {{ aws_cmd }} ecs update-service --cluster apis-{{ apigee_environment }}
+#     --service {{ namespaced_name }} --desired-count 0
+#   register: scale_down
+#   changed_when: yes
+#   failed_when: scale_down.rc != 0 and 'ServiceNotActiveException' not in scale_down.stderr and 'ServiceNotFoundException' not in scale_down.stderr
 
-- name: list tasks
-  command: >
-    {{ aws_cmd }} ecs list-tasks --cluster apis-{{ apigee_environment }}
-    --service {{ namespaced_name }} --query taskArns
-  register: list_tasks
-  failed_when: list_tasks.rc != 0 and 'ServiceNotActiveException' not in list_tasks.stderr and 'ServiceNotFoundException' not in list_tasks.stderr
-  changed_when: no
+# - name: wait for graceful stop
+#   pause:
+#     seconds: 20
+#   when: scale_down.rc == 0
 
-- name: parse tasks
-  set_fact:
-    task_arns: "{{ list_tasks.stdout | from_json }}"
-  when: list_tasks.rc == 0
+# - name: list tasks
+#   command: >
+#     {{ aws_cmd }} ecs list-tasks --cluster apis-{{ apigee_environment }}
+#     --service {{ namespaced_name }} --query taskArns
+#   register: list_tasks
+#   failed_when: list_tasks.rc != 0 and 'ServiceNotActiveException' not in list_tasks.stderr and 'ServiceNotFoundException' not in list_tasks.stderr
+#   changed_when: no
 
-- name: kill tasks
-  command: >
-    {{ aws_cmd }} ecs stop-task --cluster apis-{{ apigee_environment }} --task {{ item }}
-  with_items: "{{ task_arns }}"
-  when: list_tasks.rc == 0
-  no_log: true
-  changed_when: yes
+# - name: parse tasks
+#   set_fact:
+#     task_arns: "{{ list_tasks.stdout | from_json }}"
+#   when: list_tasks.rc == 0
+
+# - name: kill tasks
+#   command: >
+#     {{ aws_cmd }} ecs stop-task --cluster apis-{{ apigee_environment }} --task {{ item }}
+#   with_items: "{{ task_arns }}"
+#   when: list_tasks.rc == 0
+#   no_log: true
+#   changed_when: yes
 
 
-- name: create temporary directory
-  tempfile:
-    state: directory
-  register: temp_dir
+# - name: create temporary directory
+#   tempfile:
+#     state: directory
+#   register: temp_dir
 
-- name: set output dir ( allows override with  temp_out_dir )
-  set_fact:
-    out_dir: "{{ lookup('env', 'temp_out_dir') + '/_deploy' if lookup('env', 'temp_out_dir') else temp_dir.path }}"
+# - name: set output dir ( allows override with  temp_out_dir )
+#   set_fact:
+#     out_dir: "{{ lookup('env', 'temp_out_dir') + '/_deploy' if lookup('env', 'temp_out_dir') else temp_dir.path }}"
 
-- name: clean out dir
-  file:
-    path: "{{ out_dir }}"
-    state: absent
-  when: out_dir != temp_dir.path
+# - name: clean out dir
+#   file:
+#     path: "{{ out_dir }}"
+#     state: absent
+#   when: out_dir != temp_dir.path
 
-- name: template terraform
-  block:
+# - name: template terraform
+#   block:
 
-    - name: template directories
-      file:
-        path: "{{ out_dir }}/{{ item.path }}"
-        state: directory
-        mode: '{{ item.mode }}'
-      with_filetree: "{{ '../templates' }}"
-      when: item.state == 'directory'
+#     - name: template directories
+#       file:
+#         path: "{{ out_dir }}/{{ item.path }}"
+#         state: directory
+#         mode: '{{ item.mode }}'
+#       with_filetree: "{{ '../templates' }}"
+#       when: item.state == 'directory'
 
-    - name: template proxies files
-      template:
-        src: '{{ item.src }}'
-        dest: "{{ out_dir }}/{{ item.path }}"
-        mode: '{{ item.mode }}'
-      with_filetree: "{{ '../templates' }}"
-      when: item.state == 'file'
+#     - name: template proxies files
+#       template:
+#         src: '{{ item.src }}'
+#         dest: "{{ out_dir }}/{{ item.path }}"
+#         mode: '{{ item.mode }}'
+#       with_filetree: "{{ '../templates' }}"
+#       when: item.state == 'file'
 
-    - name: terraform init
-      shell: "make -C {{ out_dir }}/terraform clean init" # noqa 305
-      when: not do_not_terraform
+#     - name: terraform init
+#       shell: "make -C {{ out_dir }}/terraform clean init" # noqa 305
+#       when: not do_not_terraform
 
-    - name: terraform destroy
-      shell: "make -C {{ out_dir }}/terraform apply args='-no-color --auto-approve' tf-command=destroy" # noqa 305
-      register: tfapply
-      when: not do_not_terraform
+#     - name: terraform destroy
+#       shell: "make -C {{ out_dir }}/terraform apply args='-no-color --auto-approve' tf-command=destroy" # noqa 305
+#       register: tfapply
+#       when: not do_not_terraform
 
-  rescue:
-    - name: output stdout
-      debug:
-        var: tfapply.stdout_lines
-      when: tfapply is defined
+#   rescue:
+#     - name: output stdout
+#       debug:
+#         var: tfapply.stdout_lines
+#       when: tfapply is defined
 
-    - name: output stderr
-      debug:
-        var: tfapply.stderr_lines
-      when: tfapply is defined
+#     - name: output stderr
+#       debug:
+#         var: tfapply.stderr_lines
+#       when: tfapply is defined
 
-    - name: force fail
-      fail:
-        msg: terraform failed
+#     - name: force fail
+#       fail:
+#         msg: terraform failed
 
-  always:
-    - name: remove temp dir
-      file:
-        path: "{{ temp_dir.path }}"
-        state: absent
+#   always:
+#     - name: remove temp dir
+#       file:
+#         path: "{{ temp_dir.path }}"
+#         state: absent
