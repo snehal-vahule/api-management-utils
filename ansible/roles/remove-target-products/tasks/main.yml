@@ -24,6 +24,9 @@
   set_fact:
     product_app_map: "{{ get_apps.json.app | apigee_apps_to_product_map(product_filter=service_name_env)}}"
 
+- debug:
+    msg: "{{ product_app_map }}"
+
 - name: get products
   uri:
     url: "{{ products_uri }}"
