@@ -27,10 +27,6 @@
         msg: "APIGEE_ACCESS_TOKEN not set"
       when: not APIGEE_ACCESS_TOKEN
 
-    - name: print force_remove_apps and ecs_backen
-      debug:
-        msg: "{{ force_remove_apps }} - {{ has_ecs_backend }}"
-
   roles:
     - remove-target-products
 #    - remove-target-portal-apis
@@ -43,9 +39,9 @@
 #      - "{{ setup-facts }}"
 #      - "{{ remove-target-ecs-backend }}"
 #      - "{{ destroy-api-deployment-pre-reqs }}"
-#  when: has_ecs_backend 
+#  when: has_ecs_backend == "True"
 
 
 #  include_role:
 #    name: remove-ecr-build-role
-#  when: remove_ecs_build_role
+#  when: remove_ecs_build_role == "True"

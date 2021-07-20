@@ -20,16 +20,11 @@
     timeout: 90
   register: get_apps
 
-- debug:
-    msg: "{{ force_remove_apps }} - {{ has_ecs_backend }}"
 
 - name: Check for subscribed apps
   set_fact:
     product_app_map: "{{ get_apps.json.app | apigee_apps_to_product_map(product_filter=service_name_env)}}"
-  failed_when: product_app_map != "" and not force_remove_apps
-
-- debug:
-    msg: "{{ product_app_map }}"
+  failed_when: product_app_map != "" and force_remove_apps == "False"
 
 - name: get products
   uri:
@@ -43,8 +38,8 @@
   set_fact:
     target_products: "{{  products.json | select('match', service_name_env) }}"
 
-#- name: remove target products
-#  include_tasks: remove-product.yml
-#  loop: "{{ target_products }}"
-#  loop_control:
-#    loop_var: "product_slug"
+- name: remove target products
+  include_tasks: remove-product.yml
+  loop: "{{ target_products }}"
+  loop_control:
+    loop_var: "product_slug"
