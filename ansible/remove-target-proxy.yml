@@ -36,15 +36,16 @@
   tasks:
     - debug:
         msg: "{{ has_ecs_backend }}"
+      when: has_ecs_backend is 'True'
 
-    - name: remove ecs backend
-      include_role:
-        name: "{{ item }}"
-      with_items:
-        - "{{ setup-facts }}"
-        - "{{ remove-target-ecs-backend }}"
-        - "{{ destroy-api-deployment-pre-reqs }}"
-      when: "{{ has_ecs_backend }}" == "True"
+#    - name: remove ecs backend
+#      include_role:
+#        name: "{{ item }}"
+#      with_items:
+#        - "{{ setup-facts }}"
+#        - "{{ remove-target-ecs-backend }}"
+#        - "{{ destroy-api-deployment-pre-reqs }}"
+#      when: "{{ has_ecs_backend }}" == "True"
 
 
 #  include_role:
