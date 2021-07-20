@@ -22,14 +22,14 @@
       register: get_api_revisions
 
     - name: undeploy revisions
-      include_tasks: undeploy-revision.yml
+      include_tasks: ../../remove-old-pr-proxies/tasks/undeploy-revision.yml
       loop: "{{ get_api_revisions.json }}"
       loop_control:
         loop_var: "revision"
         label: "undeploy - {{ api_slug }}:{{ revision }}"
 
     - name: remove api from product
-      include_tasks: remove-api-product.yml
+      include_tasks: ../../remove-old-pr-proxies/tasks/remove-api-product.yml
       loop: "{{ api_products_map.get(api_slug, []) }}"
       loop_control:
         loop_var: "product_slug"
