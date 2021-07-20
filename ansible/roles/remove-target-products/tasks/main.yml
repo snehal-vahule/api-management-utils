@@ -22,6 +22,7 @@
 
 - debug:
     msg: "£{{ force_remove_apps }}£"
+  when: "{{ force_remove_apps }}" == 'False'
 
 - debug:
     msg: "{{ force_remove_apps == 'False' }}"
