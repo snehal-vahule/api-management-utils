@@ -25,7 +25,7 @@
   when: "{{ force_remove_apps }}" == 'False'
 
 - debug:
-    msg: "{{ force_remove_apps == 'False' }}"
+    msg: "{{ force_remove_apps }}" == 'False'
 
 
 - name: Check for subscribed apps
