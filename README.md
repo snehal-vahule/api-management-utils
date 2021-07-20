@@ -1,7 +1,6 @@
 # api-management-utils
 Scripts and utilities used across API managment platform and services
 
-
 ## Scripts
 * `template.py` - cli for basic jinja templating
 * `test_pull_request_deployments.py` - cli for testing utils against other repositories
