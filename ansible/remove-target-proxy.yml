@@ -37,6 +37,7 @@
 
     - name: remove ecs backend
       include_role:
+        name: "{{ item }}"
       with_items:
         - "{{ setup-facts }}"
         - "{{ remove-target-ecs-backend }}"
