@@ -9,7 +9,7 @@
     APIGEE_ACCESS_TOKEN: "{{ lookup('env', 'APIGEE_ACCESS_TOKEN') }}"
     SERVICE_NAME: "{{ lookup('env', 'SERVICE_NAME') }}" 
     SERVICE_NAME_SHORT: "{{ lookup('env', 'SERVICE_NAME_SHORT') }}"  
-    regex: "{{SERVICE_NAME}}-{{APIGEE_ENVIRONMENT}}|{{SERVICE_NAME_SHORT}}-{{APIGEE_ENVIRONMENT}}"
+    service_name_env: "{{SERVICE_NAME}}-{{APIGEE_ENVIRONMENT}}"
     has_ecs_backend: "{{ lookup('env', 'has_ecs_backend') }}"
     aws_profile: "{{ lookup('env', 'aws_profile') }}"
     remove_ecs_build_role: "{{ lookup('env', 'remove_ecs_build_role') }}"

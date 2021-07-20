@@ -25,7 +25,7 @@
 
 - name: set portal_filter
   set_fact:
-    portal_filter: "{{ apidocs.json.data | to_json | from_json | json_query(regex) }}"
+    portal_filter: "{{ apidocs.json.data | to_json | from_json | json_query(service_name_env) }}"
   register: search_result
 
 - name: make a list and set portal_api

@@ -22,7 +22,7 @@
 
 - name: create product map
   set_fact:
-    product_app_map: "{{ get_apps.json.app | apigee_apps_to_product_map(product_filter=regex)}}"
+    product_app_map: "{{ get_apps.json.app | apigee_apps_to_product_map(product_filter=service_name_env)}}"
 
 - name: get products
   uri:
@@ -34,7 +34,7 @@
 
 - name: filter products
   set_fact:
-    target_products: "{{  products.json | select('match', regex) }}"
+    target_products: "{{  products.json | select('match', service_name_env) }}"
 
 - name: remove target products
   include_tasks: remove-product.yml
