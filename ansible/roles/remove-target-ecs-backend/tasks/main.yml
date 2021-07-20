@@ -10,8 +10,12 @@
   set_fact:
     ns_service_tuples: "{{ (get_service_namespaced_services.stdout) | from_json }}"
 
+- name: select target service tuple
+  set_fact:
+    target_service_tuple: "{{ ns_service_tuples | select(item[2], service_name_env) | list }}"
+
 - debug:
-    msg: "{{ ns_service_tuples }}"
+    msg: "{{ target_service_tuple }}"
 
 - name: get terraform version
   command: terraform --version
