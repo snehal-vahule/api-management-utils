@@ -30,8 +30,8 @@ parameters:
     type: boolean
     default: False
   
-  - name: force_remove_apps
-    displayName: Tick to force remove subscribed apps from specifed product
+  - name: force_remove_from_apps
+    displayName: Tick to force remove specifed product from subscribed apps
     type: boolean
     default: False
 
@@ -46,7 +46,7 @@ stages:
           has_ecs_backend: ${{ parameters.has_ecs_backend }}
           APIGEE_ENVIRONMENT: ${{ parameters.environment }}
           remove_ecs_build_role: ${{ parameters.remove_ecs_build_role }}
-          force_remove_apps: ${{ parameters.force_remove_apps }}
+          force_remove_from_apps: ${{ parameters.force_remove_from_apps }}
 
   - ${{ if in(parameters.environment, 'dev', 'int', 'sandbox', 'prod') }}:
       - template: ./components/cleanup-proxy-choose-approval.yml
@@ -57,4 +57,4 @@ stages:
           has_ecs_backend: ${{ parameters.has_ecs_backend }}
           APIGEE_ENVIRONMENT: ${{ parameters.environment }}
           remove_ecs_build_role: ${{ parameters.remove_ecs_build_role }}
-          force_remove_apps: ${{ parameters.force_remove_apps }}
+          force_remove_from_apps: ${{ parameters.force_remove_from_apps }}
