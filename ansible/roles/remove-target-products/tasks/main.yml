@@ -21,8 +21,8 @@
   register: get_apps
 
 - debug:
-    msg: "{{ force_remove_apps }}"
-    
+    msg: "{{ force_remove_apps }} - {{ has_ecs_backend }}"
+
 - name: Check for subscribed apps
   set_fact:
     product_app_map: "{{ get_apps.json.app | apigee_apps_to_product_map(product_filter=service_name_env)}}"
