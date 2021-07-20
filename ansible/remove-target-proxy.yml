@@ -34,6 +34,9 @@
 #    - remove-target-specs 
 
   tasks:
+    - debug:
+        msg: "{{ has_ecs_backend }}"
+
     - name: remove ecs backend
       include_role:
         name: "{{ item }}"
