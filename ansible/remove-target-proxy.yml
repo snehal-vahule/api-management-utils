@@ -27,8 +27,8 @@
       when: not APIGEE_ACCESS_TOKEN
 
   roles:
-    - remove-target-portal-apis
     - remove-target-products
+    - remove-target-portal-apis
     - remove-target-proxies
     - remove-target-specs 
 
