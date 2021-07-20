@@ -41,6 +41,9 @@
   set_fact:
     portal_api: "{{ portal_apis[0] }}"
 
+- debug:
+    msg: "{{ portal_api }}"
+
 #- name: remove portal api
 #  uri:
 #    url: "{{ portals_base_uri }}/{{ portal_id }}/apidocs/{{ portal_apis.id }}"
