@@ -6,6 +6,9 @@
     return_content: yes
   register: specs
 
+- debug:
+    msg: "{{ specs }}"
+
 - name: set spec_filter
   set_fact:
     spec_filter: "{{ specs.json.contents | to_json | from_json | json_query(item) }}"
