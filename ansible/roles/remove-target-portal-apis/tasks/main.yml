@@ -33,6 +33,9 @@
 - name: make a list and set portal_api
   set_fact:
     portal_apis: "{{ search_result.results | map(attribute='ansible_facts.portal_filter') | list | flatten }}"
+  
+- debug:
+    msg: "{{ portal_apis }}"
 
 #- name: "remove portal api {{ item.apiId }}"
 #  uri:
