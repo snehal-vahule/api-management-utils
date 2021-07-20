@@ -11,6 +11,8 @@ parameters:
     type: string
   - name: remove_ecs_build_role
     type: boolean
+  - name: force_remove_apps
+    type: boolean
 
 stages:
   - ${{ if eq(parameters.apigee_org, 'nonprod') }}:
@@ -36,6 +38,7 @@ stages:
               has_ecs_backend: ${{ parameters.has_ecs_backend }}
               APIGEE_ENVIRONMENT: ${{ parameters.APIGEE_ENVIRONMENT }}
               remove_ecs_build_role: ${{ parameters.remove_ecs_build_role }}
+              force_remove_apps: ${{ parameters.force_remove_apps }}
 
 
 
@@ -66,6 +69,6 @@ stages:
                     has_ecs_backend: ${{ parameters.has_ecs_backend }}
                     APIGEE_ENVIRONMENT: ${{ parameters.APIGEE_ENVIRONMENT }}
                     remove_ecs_build_role: ${{ parameters.remove_ecs_build_role }}
-
+                    force_remove_apps: ${{ parameters.force_remove_apps }}
 
  
