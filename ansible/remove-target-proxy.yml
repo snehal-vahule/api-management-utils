@@ -11,10 +11,9 @@
     SERVICE_NAME_SHORT: "{{ lookup('env', 'SERVICE_NAME_SHORT') }}"  
     service_name_env: "{{SERVICE_NAME}}" #-{{APIGEE_ENVIRONMENT}}"
     has_ecs_backend: "{{ lookup('env', 'has_ecs_backend') }}"
-    aws_profile: "{{ lookup('env', 'aws_profile') }}"
+    aws_profile: "{{ lookup('env', 'AWS_PROFILE') }}"
     remove_ecs_build_role: "{{ lookup('env', 'remove_ecs_build_role') }}"
     service_id: "{{ SERVICE_NAME_SHORT }}"
-    AWS_PROFILE: "{{ aws_profile }}"
     force_remove_from_apps: "{{ lookup('env', 'force_remove_from_apps') }}"
 
   pre_tasks:
