@@ -27,9 +27,9 @@
         msg: "APIGEE_ACCESS_TOKEN not set"
       when: not APIGEE_ACCESS_TOKEN
 
-    - name: print force_remove_apps
+    - name: print force_remove_apps and ecs_backen
       debug:
-        msg: "{{ force_remove_apps }}"
+        msg: "{{ force_remove_apps }} - {{ has_ecs_backend }}"
 
   roles:
     - remove-target-products
