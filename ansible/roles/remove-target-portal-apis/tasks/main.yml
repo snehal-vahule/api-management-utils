@@ -6,6 +6,9 @@
     return_content: yes
   register: portals
 
+- debug:
+    msg: "{{ portals }}"
+
 - name: set portal_id
   set_fact:
     portal_id: "{{ portals.json.data[0].id }}"
