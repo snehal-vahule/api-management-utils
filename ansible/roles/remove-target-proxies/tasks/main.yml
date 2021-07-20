@@ -21,7 +21,7 @@
 
 - name: filter apis
   set_fact:
-    target_apis: "{{  get_apis.json | select('match', regex) }}"
+    target_apis: "{{ get_apis.json | select('match', regex) }}"
 
 - name: remove target apis
   include_tasks: remove-api.yml
