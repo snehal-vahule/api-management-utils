@@ -335,6 +335,8 @@ steps:
           if [[ $is_pull_request == 'true' ]]; then
             echo "_status endpoint is present in the proxy, however we dont monitor pull requests"
             echo "##vso[task.setvariable variable=set_status_monitoring]false"   
+          else if [[ $(status_endpoint_response) == "503" ]]; then
+            echo "503 status returned"
           else
             echo "_status endpoint is present in the proxy, we will enable monitoring by default"
             echo "##vso[task.setvariable variable=set_status_monitoring]true"
