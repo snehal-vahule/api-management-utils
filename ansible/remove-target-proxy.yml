@@ -14,6 +14,7 @@
     aws_profile: "{{ lookup('env', 'aws_profile') }}"
     remove_ecs_build_role: "{{ lookup('env', 'remove_ecs_build_role') }}"
     service_id: "{{ SERVICE_NAME_SHORT }}"
+    AWS_PROFILE: "{{ aws_profile }}"
     force_remove_from_apps: "{{ lookup('env', 'force_remove_from_apps') }}"
 
   pre_tasks:
@@ -34,9 +35,6 @@
 #    - remove-target-specs 
 
   tasks:
-    - debug:
-        msg: "{{ has_ecs_backend }} - {{ force_remove_from_apps }} - {{ SERVICE_NAME }}"
-
     - name: remove ecs backend
       include_role:
         name: "{{ item }}"
