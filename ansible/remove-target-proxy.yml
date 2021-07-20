@@ -16,6 +16,7 @@
     remove_ecs_build_role: "{{ lookup('env', 'remove_ecs_build_role') }}"
     service_id: "{{ SERVICE_NAME_SHORT }}"
     force_remove_from_apps: "{{ lookup('env', 'force_remove_from_apps') }}"
+    target_service_id: "{{ SERVICE_NAME_SHORT }}"
 
   pre_tasks:
     - name: check APIGEE_ORG
@@ -41,7 +42,7 @@
       with_items:
         - setup-facts
         - remove-target-ecs-backend
-        - destroy-api-deployment-pre-reqs
+#        - destroy-api-deployment-pre-reqs
       when: "{{ has_ecs_backend }} == True"
 
 
