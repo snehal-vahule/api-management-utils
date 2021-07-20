@@ -27,7 +27,7 @@
   set_fact:
     portal_filter: "{{ apidocs.json.data | to_json | from_json | json_query(item) }}"
   with_items: 
-    - "[?contains(apiId, {{ service_name_env }})]"   
+    - "[?contains(apiId, '{{ service_name_env }}')]"   
   register: search_result
 
 - name: make a list and set portal_api
