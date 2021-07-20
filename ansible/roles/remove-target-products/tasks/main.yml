@@ -20,17 +20,10 @@
     timeout: 90
   register: get_apps
 
-- debug:
-    msg: "£{{ force_remove_apps }}£"
-
-- debug:
-    msg: "{{{{ force_remove_apps }} == False }}"
-
-
 - name: Check for subscribed apps
   set_fact:
     product_app_map: "{{ get_apps.json.app | apigee_apps_to_product_map(product_filter=service_name_env)}}"
-  failed_when: product_app_map != "" and force_remove_apps == "False"
+  failed_when: product_app_map != "" and "{{ force_remove_apps }}" == "False"
 
 - name: get products
   uri:
