@@ -20,9 +20,10 @@
     timeout: 90
   register: get_apps
 
-- name: create product map
+- name: Check for subscribed apps
   set_fact:
     product_app_map: "{{ get_apps.json.app | apigee_apps_to_product_map(product_filter=service_name_env)}}"
+  failed_when: product_app_map != "" 
  
 - debug:
     msg: "{{ product_app_map }}"
