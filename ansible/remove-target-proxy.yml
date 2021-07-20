@@ -33,13 +33,15 @@
 #    - remove-target-proxies
     - remove-target-specs 
 
-  include_role:
-    name: '{{ item }}'
-    with_items:
-      - "{{ setup-facts }}"
-      - "{{ remove-target-ecs-backend }}"
-      - "{{ destroy-api-deployment-pre-reqs }}"
-    when: has_ecs_backend == "True"
+  tasks:
+
+    - name: remove ecs backend
+      include_role:
+      with_items:
+        - "{{ setup-facts }}"
+        - "{{ remove-target-ecs-backend }}"
+        - "{{ destroy-api-deployment-pre-reqs }}"
+      when: has_ecs_backend == "True"
 
 
 #  include_role:
