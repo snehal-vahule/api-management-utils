@@ -25,6 +25,12 @@ parameters:
     type: string
     default: ""
 
+  - name: remove_ecs_build_role
+    displayName: Tick to include the removal of the ECS build role 
+    type: boolean
+    default: False
+
+
 stages:
   - ${{ if in(parameters.environment, 'internal-qa', 'ref', 'internal-qa-sandbox', 'internal-dev-sandbox', 'internal-dev') }}:
       - template: ./components/cleanup-proxy-choose-approval.yml
@@ -34,6 +40,7 @@ stages:
           service_name_short: ${{ parameters.service_name_short }}
           has_ecs_backend: ${{ parameters.has_ecs_backend }}
           APIGEE_ENVIRONMENT: ${{ parameters.environment }}
+          remove_ecs_build_role: ${{ parameters.remove_ecs_build_role }}
 
   - ${{ if in(parameters.environment, 'dev', 'int', 'sandbox', 'prod') }}:
       - template: ./components/cleanup-proxy-choose-approval.yml
@@ -43,3 +50,5 @@ stages:
           service_name_short: ${{ parameters.service_name_short }}
           has_ecs_backend: ${{ parameters.has_ecs_backend }}
           APIGEE_ENVIRONMENT: ${{ parameters.environment }}
+          remove_ecs_build_role: ${{ parameters.remove_ecs_build_role }}
+

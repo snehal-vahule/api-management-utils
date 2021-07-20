@@ -13,6 +13,8 @@ parameters:
     type: boolean
   - name: APIGEE_ENVIRONMENT
     type: string
+  - name: remove_ecs_build_role
+    type: boolean
 
 steps:
   - checkout: self
@@ -53,6 +55,7 @@ steps:
       export APIGEE_ENVIRONMENT="${{ parameters.APIGEE_ENVIRONMENT }}"
       export APIGEE_ORG="${{ parameters.apigee_org }}"
       export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"   
+      export remove_ecs_build_role="${{ parameters.remove_ecs_build_role }}"
       ANSIBLE_FORCE_COLOR=yes make -C ansible remove-target-proxy
     displayName: "Cleanup target portal apis"
  

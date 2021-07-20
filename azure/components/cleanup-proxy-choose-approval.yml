@@ -9,6 +9,8 @@ parameters:
     type: boolean
   - name: APIGEE_ENVIRONMENT
     type: string
+  - name: remove_ecs_build_role
+    type: boolean
 
 stages:
   - ${{ if eq(parameters.apigee_org, 'nonprod') }}:
@@ -33,6 +35,9 @@ stages:
               service_name_short: ${{ parameters.service_name_short }}
               has_ecs_backend: ${{ parameters.has_ecs_backend }}
               APIGEE_ENVIRONMENT: ${{ parameters.APIGEE_ENVIRONMENT }}
+              remove_ecs_build_role: ${{ parameters.remove_ecs_build_role }}
+
+
 
   - ${{ if eq(parameters.apigee_org, 'prod') }}:
     - stage: ${{ parameters.apigee_org }}
@@ -60,5 +65,7 @@ stages:
                     service_name_short: ${{ parameters.service_name_short }}
                     has_ecs_backend: ${{ parameters.has_ecs_backend }}
                     APIGEE_ENVIRONMENT: ${{ parameters.APIGEE_ENVIRONMENT }}
+                    remove_ecs_build_role: ${{ parameters.remove_ecs_build_role }}
+
 
  

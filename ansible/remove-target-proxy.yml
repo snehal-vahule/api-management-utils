@@ -12,6 +12,8 @@
     regex: "{{SERVICE_NAME}}-{{APIGEE_ENVIRONMENT}}|{{SERVICE_NAME_SHORT}}-{{APIGEE_ENVIRONMENT}}"
     has_ecs_backend: "{{ lookup('env', 'has_ecs_backend') }}"
     aws_profile: "{{ lookup('env', 'aws_profile') }}"
+    remove_ecs_build_role: "{{ lookup('env', 'remove_ecs_build_role') }}"
+    service_id: "{{ SERVICE_NAME_SHORT }}"
 
   pre_tasks:
     - name: check APIGEE_ORG
@@ -35,4 +37,10 @@
 #    with_items:
 #      - "{{ setup-facts }}"
 #      - "{{ remove-target-ecs-backend }}"
+#      - "{{ destroy-api-deployment-pre-reqs }}"
 #  when: has_ecs_backend 
+
+
+#  include_role:
+#    name: remove-ecr-build-role
+#  when: remove_ecs_build_role
