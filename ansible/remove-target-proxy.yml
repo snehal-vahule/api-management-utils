@@ -35,8 +35,7 @@
 
   tasks:
     - debug:
-        msg: "{{ has_ecs_backend }}"
-      when: has_ecs_backend == "True"
+        msg: "{{ has_ecs_backend }} - {{ force_remove_from_apps }} - {{ SERVICE_NAME }}"
 
 #    - name: remove ecs backend
 #      include_role:
