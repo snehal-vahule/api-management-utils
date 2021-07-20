@@ -27,11 +27,11 @@
         msg: "APIGEE_ACCESS_TOKEN not set"
       when: not APIGEE_ACCESS_TOKEN
 
-#  roles:
+  roles:
 #    - remove-target-products
 #    - remove-target-portal-apis
 #    - remove-target-proxies
-#    - remove-target-specs 
+    - remove-target-specs 
 
   include_role:
     name: '{{ item }}'
