@@ -44,7 +44,7 @@
         - "{{ setup-facts }}"
         - "{{ remove-target-ecs-backend }}"
         - "{{ destroy-api-deployment-pre-reqs }}"
-      when: "{{ has_ecs_backend }}" == "True"
+      when: "{{ has_ecs_backend }} == True"
 
 
 #  include_role:
