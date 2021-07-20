@@ -27,19 +27,19 @@
         msg: "APIGEE_ACCESS_TOKEN not set"
       when: not APIGEE_ACCESS_TOKEN
 
-  roles:
+#  roles:
 #    - remove-target-products
 #    - remove-target-portal-apis
 #    - remove-target-proxies
-    - remove-target-specs 
+#    - remove-target-specs 
 
-#  include_role:
-#    name: '{{ item }}'
-#    with_items:
-#      - "{{ setup-facts }}"
-#      - "{{ remove-target-ecs-backend }}"
-#      - "{{ destroy-api-deployment-pre-reqs }}"
-#  when: has_ecs_backend == "True"
+  include_role:
+    name: '{{ item }}'
+    with_items:
+      - "{{ setup-facts }}"
+      - "{{ remove-target-ecs-backend }}"
+      - "{{ destroy-api-deployment-pre-reqs }}"
+  when: has_ecs_backend == "True"
 
 
 #  include_role:
