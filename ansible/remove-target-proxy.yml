@@ -11,6 +11,7 @@
     SERVICE_NAME_SHORT: "{{ lookup('env', 'SERVICE_NAME_SHORT') }}"  
     service_name_env: "{{SERVICE_NAME}}" #-{{APIGEE_ENVIRONMENT}}"
     has_ecs_backend: "{{ lookup('env', 'has_ecs_backend') }}"
+    account:  "{{ lookup('env','AWS_ACCOUNT') }}"
     aws_profile: "{{ lookup('env', 'AWS_PROFILE') }}"
     remove_ecs_build_role: "{{ lookup('env', 'remove_ecs_build_role') }}"
     service_id: "{{ SERVICE_NAME_SHORT }}"
