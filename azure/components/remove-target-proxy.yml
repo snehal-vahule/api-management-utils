@@ -50,11 +50,15 @@ steps:
   - bash: |
       set -euo pipefail
       export SERVICE_NAME="${{ parameters.service_name }}"
+      echo "service_name: $SERVICE_NAME"
       export SERVICE_NAME_SHORT="${{ parameters.service_name_short }}"
+      echo "service_name_short: $SERVICE_NAME_SHORT" 
       export has_ecs_backend="${{ parameters.has_ecs_backend }}"
       export APIGEE_ENVIRONMENT="${{ parameters.APIGEE_ENVIRONMENT }}"
+      echo "env: $APIGEE_ENVIRONMENT"
       export APIGEE_ORG="${{ parameters.apigee_org }}"
-      export APIGEE_ACCESS_TOKEN="${{ secret.AccessToken }}"   
+      echo "org: $APIGEE_ORG"
+      export APIGEE_ACCESS_TOKEN="$(secret.AccessToken)"   
       export remove_ecs_build_role="${{ parameters.remove_ecs_build_role }}"
       ANSIBLE_FORCE_COLOR=yes make -C ansible remove-target-proxy
     displayName: "Cleanup target portal apis"
