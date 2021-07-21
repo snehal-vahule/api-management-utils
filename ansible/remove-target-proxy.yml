@@ -40,8 +40,8 @@
       include_role:
         name: setup-facts
       when: 
-        - has_ecs_backend == "True"
-        - remove_ecr_build_role == "True"
+        - "{{ has_ecs_backend }}" == "True"
+        - "{{ remove_ecr_build_role }}" == "True"
 
 #    - name: remove ecs backend
 #      include_role:
@@ -51,10 +51,11 @@
 #        - remove-target-ecs-backend
 #        - destroy-api-deployment-pre-reqs
 #      when: "{{ has_ecs_backend }} == True"
+
     - debug:
         msg: "{{ remove_ecr_build_role }}"
 
-    - name: remove ecr build role
-      include_role:
-        name: remove-ecr-build-role
-      when: "{{ remove_ecr_build_role }} == True"
+#    - name: remove ecr build role
+#      include_role:
+#        name: remove-ecr-build-role
+#      when: "{{ remove_ecr_build_role }} == True"
