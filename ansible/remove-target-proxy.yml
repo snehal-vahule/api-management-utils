@@ -36,16 +36,16 @@
 #    - remove-target-specs 
 
   tasks:
-    - name: remove ecs backend
+#    - name: remove ecs backend
+#      include_role:
+#        name: "{{ item }}"
+#      with_items:
+#        - setup-facts
+#        - remove-target-ecs-backend
+#        - destroy-api-deployment-pre-reqs
+#      when: "{{ has_ecs_backend }} == True"
+
+    - name: remove ecs build role
       include_role:
-        name: "{{ item }}"
-      with_items:
-        - setup-facts
-        - remove-target-ecs-backend
-        - destroy-api-deployment-pre-reqs
-      when: "{{ has_ecs_backend }} == True"
-
-
-#  include_role:
-#    name: remove-ecr-build-role
-#  when: remove_ecs_build_role == "True"
+        name: remove-ecs-build-role
+      when: "{{ remove_ecs_build_role }} == True"
