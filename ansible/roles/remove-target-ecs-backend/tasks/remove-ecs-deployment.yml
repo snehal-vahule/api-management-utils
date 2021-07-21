@@ -6,9 +6,9 @@
     service_id: "{{  ns_service_tuple.0 }}"
     pr_number: "{{ ns_service_tuple.2 |  regex_replace('^' + ns_service_tuple.0 + '-', '')  }}"
 
-- name:
+- name: set matches_target
   set_fact:
-    matches_target: "{{ namespaces_name == target_service_name_env }}"
+    matches_target: "{{ namespaced_name == target_service_name_env }}"
 
 - name: "remove target ecs service {{ apigee_environment }} - {{ namespaced_name }}"
   include_role:
