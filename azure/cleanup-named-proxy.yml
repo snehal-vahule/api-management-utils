@@ -25,8 +25,8 @@ parameters:
     type: string
     default: ""
 
-  - name: remove_ecs_build_role
-    displayName: Tick to include the removal of the ECS build role 
+  - name: remove_ecr_build_role
+    displayName: Tick to include the removal of the ECR build role 
     type: boolean
     default: False
   
@@ -45,7 +45,7 @@ stages:
           service_name_short: ${{ parameters.service_name_short }}
           has_ecs_backend: ${{ parameters.has_ecs_backend }}
           APIGEE_ENVIRONMENT: ${{ parameters.environment }}
-          remove_ecs_build_role: ${{ parameters.remove_ecs_build_role }}
+          remove_ecr_build_role: ${{ parameters.remove_ecr_build_role }}
           force_remove_from_apps: ${{ parameters.force_remove_from_apps }}
 
   - ${{ if in(parameters.environment, 'dev', 'int', 'sandbox', 'prod') }}:
@@ -56,5 +56,5 @@ stages:
           service_name_short: ${{ parameters.service_name_short }}
           has_ecs_backend: ${{ parameters.has_ecs_backend }}
           APIGEE_ENVIRONMENT: ${{ parameters.environment }}
-          remove_ecs_build_role: ${{ parameters.remove_ecs_build_role }}
+          remove_ecr_build_role: ${{ parameters.remove_ecr_build_role }}
           force_remove_from_apps: ${{ parameters.force_remove_from_apps }}

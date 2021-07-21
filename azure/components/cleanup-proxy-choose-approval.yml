@@ -9,7 +9,7 @@ parameters:
     type: boolean
   - name: APIGEE_ENVIRONMENT
     type: string
-  - name: remove_ecs_build_role
+  - name: remove_ecr_build_role
     type: boolean
   - name: force_remove_from_apps
     type: boolean
@@ -37,7 +37,7 @@ stages:
               service_name_short: ${{ parameters.service_name_short }}
               has_ecs_backend: ${{ parameters.has_ecs_backend }}
               APIGEE_ENVIRONMENT: ${{ parameters.APIGEE_ENVIRONMENT }}
-              remove_ecs_build_role: ${{ parameters.remove_ecs_build_role }}
+              remove_ecr_build_role: ${{ parameters.remove_ecr_build_role }}
               force_remove_from_apps: ${{ parameters.force_remove_from_apps }}
 
 
@@ -68,7 +68,7 @@ stages:
                     service_name_short: ${{ parameters.service_name_short }}
                     has_ecs_backend: ${{ parameters.has_ecs_backend }}
                     APIGEE_ENVIRONMENT: ${{ parameters.APIGEE_ENVIRONMENT }}
-                    remove_ecs_build_role: ${{ parameters.remove_ecs_build_role }}
+                    remove_ecr_build_role: ${{ parameters.remove_ecr_build_role }}
                     force_remove_from_apps: ${{ parameters.force_remove_from_apps }}
 
  

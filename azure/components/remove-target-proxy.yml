@@ -13,7 +13,7 @@ parameters:
     type: boolean
   - name: APIGEE_ENVIRONMENT
     type: string
-  - name: remove_ecs_build_role
+  - name: remove_ecr_build_role
     type: boolean
   - name: force_remove_from_apps
     type: boolean
@@ -74,7 +74,7 @@ steps:
       export APIGEE_ACCESS_TOKEN="$(secret.${{ parameters.apigee_org }}_API_ACCESS_TOKEN)"
       export AWS_ACCOUNT="${{ parameters.aws_account }}"
       export AWS_PROFILE="${{ parameters.aws_profile }}"
-      export remove_ecs_build_role="${{ parameters.remove_ecs_build_role }}"
+      export remove_ecr_build_role="${{ parameters.remove_ecr_build_role }}"
       export force_remove_from_apps="${{ parameters.force_remove_from_apps }}"
       ANSIBLE_FORCE_COLOR=yes make -C ansible remove-target-proxy
     displayName: "Cleanup target portal apis"

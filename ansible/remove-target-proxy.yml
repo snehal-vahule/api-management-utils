@@ -13,7 +13,7 @@
     has_ecs_backend: "{{ lookup('env', 'has_ecs_backend') }}"
     account:  "{{ lookup('env','AWS_ACCOUNT') }}"
     aws_profile: "{{ lookup('env', 'AWS_PROFILE') }}"
-    remove_ecs_build_role: "{{ lookup('env', 'remove_ecs_build_role') }}"
+    remove_ecr_build_role: "{{ lookup('env', 'remove_ecr_build_role') }}"
     service_id: "{{ SERVICE_NAME_SHORT }}"
     force_remove_from_apps: "{{ lookup('env', 'force_remove_from_apps') }}"
     target_service_id: "{{ SERVICE_NAME_SHORT }}"
@@ -44,8 +44,10 @@
 #        - remove-target-ecs-backend
 #        - destroy-api-deployment-pre-reqs
 #      when: "{{ has_ecs_backend }} == True"
+    - debug:
+        msg: "{{ remove_ecr_build_role }}"
 
-    - name: remove ecs build role
+    - name: remove ecr build role
       include_role:
-        name: remove-ecs-build-role
-      when: "{{ remove_ecs_build_role }} == True"
+        name: remove-ecr-build-role
+      when: "{{ remove_ecr_build_role }} == True"
