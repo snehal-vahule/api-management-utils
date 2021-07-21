@@ -36,6 +36,11 @@
 #    - remove-target-specs 
 
   tasks:
+    - name: setup-facts
+      include_role:
+        name: setup-facts
+      when: "{{ has_ecs_backend }} == True" or "{{ remove_ecr_build_role }} == True"
+
 #    - name: remove ecs backend
 #      include_role:
 #        name: "{{ item }}"
