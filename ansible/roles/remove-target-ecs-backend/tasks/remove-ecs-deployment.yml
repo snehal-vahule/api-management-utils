@@ -6,7 +6,11 @@
     service_id: "{{  ns_service_tuple.0 }}"
     pr_number: "{{ ns_service_tuple.2 |  regex_replace('^' + ns_service_tuple.0 + '-', '')  }}"
 
+- name:
+  set_fact:
+    matches_target: "{{ namespaces_name == target_service_name_env }}"
+
 - name: "remove target ecs service {{ apigee_environment }} - {{ namespaced_name }}"
   include_role:
     name: destroy-ecs-proxies
-  when: namespaced_name == target_service_name_env #remove after testing
+  when: matches_target #remove after testing
