@@ -299,6 +299,8 @@ steps:
           else
             echo "##vso[task.logissue type=error]Your proxy dont have a _ping endpoint therefore we can't monitor this proxy and it should not be released, use the flag 'enable_monitoring=false' if your API don't support _ping healthcheck."
             exit 1
+          fi
+        fi
       displayName: 'Set ping endpoint monitoring'
 
   - ${{ if eq(parameters.enable_monitoring, false) }}:
@@ -332,6 +334,8 @@ steps:
           else
             echo "##vso[task.logissue type=error]Your proxy dont have a _status endpoint therefore we can't monitor this proxy and it should not be released, use the flag 'enable_status_monitoring=false' if your API don't support _status healthcheck."
             exit 1
+          fi
+        fi
       displayName: 'Set status endpoint monitoring'
 
   - ${{ if eq(parameters.enable_status_monitoring, false) }}:
