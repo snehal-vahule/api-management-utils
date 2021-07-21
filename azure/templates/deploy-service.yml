@@ -333,23 +333,14 @@ steps:
           export is_pull_request=false
         fi
 
-        if [[ $(status_endpoint_response) == "200" || $(status_endpoint_response) == "503" ]]; then
-          if [[ $is_pull_request == 'true' ]]; then
-            echo "_status endpoint is present in the proxy, however we dont monitor pull requests"
-            echo "##vso[task.setvariable variable=set_status_monitoring]false"   
-          else
-            echo "_status endpoint is present in the proxy, we will enable monitoring by default"
-            echo "##vso[task.setvariable variable=set_status_monitoring]true"
-          fi
+        if [[ $is_pull_request == 'true' ]]; then
+          echo "##vso[task.setvariable variable=set_status_monitoring]false"
         else
-          if [[ $is_pull_request == 'true' ]]; then
-            echo "WARNING: Please add a _status endpoit to your proxy before releasing or your release will fail. Or use the flag 'enable_status_monitoring=false' if your API don't support _status healthcheck" 
-            echo "##vso[task.setvariable variable=set_status_monitoring]false"   
+          if [[ $(status_endpoint_response) == "200" ]]; then
+            echo "##vso[task.setvariable variable=set_status_monitoring]true"
           else
-            echo "ERROR: Your proxy dont have a _status endpoint therefore we can't monitor this proxy and it should not be released, use the flag 'enable_status_monitoring=false' if your API don't support _status healthcheck"
+            echo "##vso[task.logissue type=error]Your proxy dont have a _status endpoint therefore we can't monitor this proxy and it should not be released, use the flag 'enable_status_monitoring=false' if your API don't support _status healthcheck."
             exit 1
-          fi 
-        fi
       displayName: 'Set status endpoint monitoring'
 
 
