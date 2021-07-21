@@ -9,4 +9,4 @@
 - name: "remove target ecs service {{ apigee_environment }} - {{ namespaced_name }}"
   include_role:
     name: destroy-ecs-proxies
-  when: namespaced_name == {{ service_name_env }}  #remove after testing
+  when: "{{ namespaced_name == service_name_env }}" #remove after testing
