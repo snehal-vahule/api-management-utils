@@ -1,4 +1,3 @@
-
 - name: "get products"
   uri:
     url: "{{ products_uri }}?expand=true"

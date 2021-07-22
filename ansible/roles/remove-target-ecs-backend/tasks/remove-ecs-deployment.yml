@@ -1,4 +1,3 @@
-
 - name: extract vars
   set_fact:
     apigee_environment: "{{ ns_service_tuple.1 }}"

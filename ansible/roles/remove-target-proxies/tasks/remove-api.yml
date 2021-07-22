@@ -1,4 +1,3 @@
-
 - name: "get api {{ api_slug }}"
   uri:
     url: "{{ apis_uri }}/{{ api_slug }}"
@@ -42,4 +41,3 @@
         headers:
           Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
       changed_when: yes
-

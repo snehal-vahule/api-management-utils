@@ -1,4 +1,3 @@
-
 - name: "get product {{ product_slug }}"
   uri:
     url: "{{ products_uri }}/{{ product_slug }}"
@@ -30,5 +29,3 @@
       headers:
         Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     changed_when: yes
-
-

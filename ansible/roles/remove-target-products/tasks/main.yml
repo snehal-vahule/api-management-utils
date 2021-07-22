@@ -1,4 +1,3 @@
-
 - name: "get developers"
   uri:
     url: "{{ developers_uri }}?expand=true"

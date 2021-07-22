@@ -1,4 +1,4 @@
-- name: remove target portal apis
+- name: remove target proxy
   hosts: 127.0.0.1
   connection: local
   gather_facts: yes
@@ -29,6 +29,31 @@
         msg: "APIGEE_ACCESS_TOKEN not set"
       when: not APIGEE_ACCESS_TOKEN
 
+    - name: check APIGEE_ENVIRONMENT
+      fail:
+        msg: "APIGEE_ENVIRONMENT not set"
+      when: not APIGEE_ENVIRONMENT
+
+    - name: check AWS_ACCOUNT
+      fail:
+        msg: "AWS_ACCOUNT not set"
+      when: not account
+
+    - name: check AWS_PROFILE
+      fail:
+        msg: "AWS_PROFILE not set"
+      when: not aws_profile
+
+    - name: check SERVICE_NAME
+      fail:
+        msg: "SERVICE_NAME not set"
+      when: not SERVICE_NAME
+
+    - name: check SERVICE_NAME_SHORT
+      fail:
+        msg: "SERVICE_NAME_SHORT not set"
+      when: not SERVICE_NAME_SHORT
+
   roles:
     - remove-target-products
     - remove-target-portal-apis
@@ -53,4 +78,3 @@
         - destroy-api-deployment-pre-reqs
         - remove-ecr-build-role
       when: remove_ecr_build_role
-
