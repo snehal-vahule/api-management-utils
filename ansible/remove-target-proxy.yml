@@ -45,15 +45,11 @@
 #      include_role:
 #        name: "{{ item }}"
 #      with_items:
-#        - setup-facts
 #        - remove-target-ecs-backend
 #        - destroy-api-deployment-pre-reqs
-#      when: "{{ has_ecs_backend }} == True"
+#      when: has_ecs_backend
 
-    - debug:
-        msg: "{{ remove_ecr_build_role }}"
-
-#    - name: remove ecr build role
-#      include_role:
-#        name: remove-ecr-build-role
-#      when: "{{ remove_ecr_build_role }} == True"
+    - name: remove ecr build role
+      include_role:
+        name: remove-ecr-build-role
+      when: remove_ecr_build_role
