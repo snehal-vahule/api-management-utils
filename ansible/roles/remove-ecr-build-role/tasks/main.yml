@@ -16,6 +16,15 @@
     role_policies: "{{ list_role_policies.stdout | from_json }}"
   when: get_role.rc == 0
 
+
+- debug:
+    msg: "{{ aws_cmd }} iam delete-role-policy --role-name {{ build_role_name }} --policy-name {{ item }}" 
+  with_items: "{{ role_policies }}"
+ 
+- debug:
+    msg: "{{ aws_cmd }} iam delete-role --role-name {{ build_role_name }} --query Role" 
+  with_items: "{{ role_policies }}"
+ 
 #- name: delete role policy
 #  command: "{{ aws_cmd }} iam delete-role-policy --role-name {{ build_role_name }} --policy-name {{ item }}"
 #  with_items: "{{ role_policies }}"
