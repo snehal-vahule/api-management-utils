@@ -39,7 +39,7 @@
     - name: setup-facts
       include_role:
         name: setup-facts
-      when: (has_ecs_backend == "True") or (remove_ecr_build_role == "True")
+      when: has_ecs_backend == "True"
 
 #    - name: remove ecs backend
 #      include_role:
