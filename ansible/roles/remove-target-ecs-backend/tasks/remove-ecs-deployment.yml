@@ -9,4 +9,3 @@
 - name: "remove target ecs service {{ apigee_environment }} - {{ namespaced_name }}"
   include_role:
     name: destroy-ecs-proxies
-  when: namespaced_name == "canary-61" #remove after testing

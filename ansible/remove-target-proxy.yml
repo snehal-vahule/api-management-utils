@@ -9,7 +9,7 @@
     APIGEE_ACCESS_TOKEN: "{{ lookup('env', 'APIGEE_ACCESS_TOKEN') }}"
     SERVICE_NAME: "{{ lookup('env', 'SERVICE_NAME') }}" 
     SERVICE_NAME_SHORT: "{{ lookup('env', 'SERVICE_NAME_SHORT') }}"  
-    service_name_env: "{{SERVICE_NAME}}" #-{{APIGEE_ENVIRONMENT}}"
+    service_name_env: "{{SERVICE_NAME}}-{{APIGEE_ENVIRONMENT}}"
     has_ecs_backend: "{{ lookup('env', 'has_ecs_backend') }}"
     account:  "{{ lookup('env','AWS_ACCOUNT') }}"
     aws_profile: "{{ lookup('env', 'AWS_PROFILE') }}"
@@ -29,11 +29,11 @@
         msg: "APIGEE_ACCESS_TOKEN not set"
       when: not APIGEE_ACCESS_TOKEN
 
-#  roles:
-#    - remove-target-products
-#    - remove-target-portal-apis
-#    - remove-target-proxies
-#    - remove-target-specs 
+  roles:
+    - remove-target-products
+    - remove-target-portal-apis
+    - remove-target-proxies
+    - remove-target-specs 
 
   tasks:
     - name: setup-facts

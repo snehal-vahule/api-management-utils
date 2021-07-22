@@ -1,21 +1,21 @@
 # REMOVE WHEN NOT IN DEV
+#- name: get namedspaced deployments for {{ target_service_id }}
+#  command: >
+#    {{ aws_cmd }} resourcegroupstaggingapi get-resources --tag-filters Key=api-is-namespaced,Values=true
+#    --resource-type-filters elasticloadbalancing:targetgroup --query
+#    'ResourceTagMappingList[?Tags[?Value==`{{ target_service_id }}`]][].Tags[?Key==`api-environment`||Key==`api-namespaced-name`||Key==`api-service`].Value'
+#  changed_when: no
+#  register: get_service_namespaced_services
+
+# USE WHEN NOT IN DEV
 - name: get namedspaced deployments for {{ target_service_id }}
   command: >
-    {{ aws_cmd }} resourcegroupstaggingapi get-resources --tag-filters Key=api-is-namespaced,Values=true
+    {{ aws_cmd }} resourcegroupstaggingapi get-resources
+    --tag-filters Key=api-namespaced-name,Values={{ target_service_id }} Key=api-environment,Values={{ target_env }} Key=api-is-namespaced,Values=false
     --resource-type-filters elasticloadbalancing:targetgroup --query
     'ResourceTagMappingList[?Tags[?Value==`{{ target_service_id }}`]][].Tags[?Key==`api-environment`||Key==`api-namespaced-name`||Key==`api-service`].Value'
   changed_when: no
   register: get_service_namespaced_services
-
-# USE WHEN NOT IN DEV
-# - name: get namedspaced deployments for {{ target_service_id }}
-#   command: >
-#     {{ aws_cmd }} resourcegroupstaggingapi get-resources
-#     --tag-filters Key=api-namespaced-name,Values={{ target_service_id }} Key=api-environment,Values={{ target_env }} Key=api-is-namespaced,Values=false
-#     --resource-type-filters elasticloadbalancing:targetgroup --query
-#     'ResourceTagMappingList[?Tags[?Value==`{{ target_service_id }}`]][].Tags[?Key==`api-environment`||Key==`api-namespaced-name`||Key==`api-service`].Value'
-#   changed_when: no
-#   register: get_service_namespaced_services
 
 - name: parse services
   set_fact:

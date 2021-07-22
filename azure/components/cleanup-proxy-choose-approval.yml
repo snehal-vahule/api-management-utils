@@ -52,7 +52,7 @@ stages:
           timeoutInMinutes: 40
           pool:
             name: AWS-ECS
-          environment: "infrastructure-approval-ptl" # changed from -prod
+          environment: "infrastructure-approval-prod"
           workspace:
             clean: all
           strategy:
@@ -62,8 +62,6 @@ stages:
                 - template: ./remove-target-proxy.yml
                   parameters:
                     apigee_org: ${{ parameters.apigee_org }}
-                    #aws_account: prod #look at this
-                    #aws_profile: apm_prod
                     service_name: ${{ parameters.service_name }}
                     service_name_short: ${{ parameters.service_name_short }}
                     has_ecs_backend: ${{ parameters.has_ecs_backend }}
