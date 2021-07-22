@@ -76,6 +76,6 @@ steps:
       export AWS_PROFILE="${{ parameters.aws_profile }}"
       export remove_ecr_build_role="${{ parameters.remove_ecr_build_role }}"
       export force_remove_from_apps="${{ parameters.force_remove_from_apps }}"
-      ANSIBLE_FORCE_COLOR=yes make -C ansible remove-target-proxy
+      # ANSIBLE_FORCE_COLOR=yes make -C ansible remove-target-proxy
     displayName: "Cleanup target portal apis"
  

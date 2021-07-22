@@ -15,23 +15,23 @@ parameters:
     type: string
     default: ""
 
-  - name: has_ecs_backend
-    displayName: Target service has ecs backend
-    type: boolean
-    default: False
-
   - name: environment
     displayName: Name of target environment
     type: string
     default: ""
 
+  - name: has_ecs_backend
+    displayName: Target service has ecs backend
+    type: boolean
+    default: False
+
   - name: remove_ecr_build_role
-    displayName: Tick to include the removal of the ECR build role 
+    displayName: Remove the ECR build role and pre-reqs for all deployments 
     type: boolean
     default: False
   
   - name: force_remove_from_apps
-    displayName: Tick to force remove specifed product from subscribed apps
+    displayName: Force remove specifed product from subscribed apps
     type: boolean
     default: False
 
