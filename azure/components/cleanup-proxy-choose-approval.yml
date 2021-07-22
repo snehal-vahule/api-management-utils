@@ -70,10 +70,10 @@ stages:
                     APIGEE_ENVIRONMENT: ${{ parameters.APIGEE_ENVIRONMENT }}
                     remove_ecr_build_role: ${{ parameters.remove_ecr_build_role }}
                     force_remove_from_apps: ${{ parameters.force_remove_from_apps }}
-                    - ${{ if eq(parameters.APIGEE_ENVIRONMENT, 'prod') }}:
+                    ${{ if eq(parameters.APIGEE_ENVIRONMENT, 'prod') }}:
                       aws_account: prod
                       aws_profile: apm_prod
-                    - ${{ if ne(parameters.APIGEE_ENVIRONMENT, 'prod') }}:
+                    ${{ if ne(parameters.APIGEE_ENVIRONMENT, 'prod') }}:
                       aws_account: ptl
                       aws_profile: apm_ptl  
 
