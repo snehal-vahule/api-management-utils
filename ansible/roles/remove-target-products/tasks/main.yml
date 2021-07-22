@@ -23,7 +23,7 @@
 - name: Check for subscribed apps
   set_fact:
     product_app_map: "{{ get_apps.json.app | apigee_apps_to_product_map(product_filter=service_name_env)}}"
-  failed_when: product_app_map != "" and "{{ force_remove_from_apps }}" != "True"
+  failed_when: product_app_map != "{}" and "{{ force_remove_from_apps }}" != "True"
 
 - name: get products
   uri:
