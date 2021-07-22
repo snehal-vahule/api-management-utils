@@ -41,4 +41,5 @@
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
   changed_when: yes
+  when: portal_apis|length>0
 
