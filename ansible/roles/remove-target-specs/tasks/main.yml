@@ -27,3 +27,4 @@
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
   changed_when: yes
+  when: target_specs|length>0
