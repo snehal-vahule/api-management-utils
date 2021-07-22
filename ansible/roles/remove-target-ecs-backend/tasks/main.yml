@@ -15,12 +15,12 @@
   changed_when: no
   register: get_service_namespaced_services
 
-- name: print services
-  debug: msg="{{ get_service_namespaced_services }}"
-
 - name: parse services
   set_fact:
     ns_service_tuples: "{{ (get_service_namespaced_services.stdout) | from_json }}"
+
+- name: print services
+  debug: msg="{{ ns_service_tuples }}"
 
 - name: get terraform version
   command: terraform --version
