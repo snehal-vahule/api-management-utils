@@ -1,10 +1,22 @@
+# - name: get namedspaced deployments for {{ target_service_id }}
+#   command: >
+#     {{ aws_cmd }} resourcegroupstaggingapi get-resources --tag-filters Key=api-is-namespaced,Values=true
+#     --resource-type-filters elasticloadbalancing:targetgroup --query
+#     'ResourceTagMappingList[?Tags[?Value==`{{ target_service_id }}`]][].Tags[?Key==`api-environment`||Key==`api-namespaced-name`||Key==`api-service`].Value'
+#   changed_when: no
+#   register: get_service_namespaced_services
+
 - name: get namedspaced deployments for {{ target_service_id }}
   command: >
-    {{ aws_cmd }} resourcegroupstaggingapi get-resources --tag-filters Key=api-is-namespaced,Values=true
+    {{ aws_cmd }} resourcegroupstaggingapi get-resources
+    --tag-filters Key=api-namespaced-name,Values={{ target_service_id }} Key=api-environment,Values={{ target_env }} Key=api-is-namespaced,Values=false
     --resource-type-filters elasticloadbalancing:targetgroup --query
     'ResourceTagMappingList[?Tags[?Value==`{{ target_service_id }}`]][].Tags[?Key==`api-environment`||Key==`api-namespaced-name`||Key==`api-service`].Value'
   changed_when: no
   register: get_service_namespaced_services
+
+- name: print services
+  debug: msg="{{ get_service_namespaced_services }}"
 
 - name: parse services
   set_fact:
@@ -17,8 +29,8 @@
 - name: print terraform version
   debug: msg="{{ terraform_version.stdout }}"
 
-- name: maybe remove deployment
-  include: remove-ecs-deployment.yml
-  with_list: "{{ ns_service_tuples }}"
-  loop_control:
-    loop_var: ns_service_tuple
+# - name: maybe remove deployment
+#   include: remove-ecs-deployment.yml
+#   with_list: "{{ ns_service_tuples }}"
+#   loop_control:
+#     loop_var: ns_service_tuple
