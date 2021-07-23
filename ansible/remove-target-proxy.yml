@@ -42,7 +42,7 @@
       with_items:
         - setup-facts
         - remove-target-ecs-backend
-#        - destroy-api-deployment-pre-reqs
+        - destroy-api-deployment-pre-reqs
       when: "{{ has_ecs_backend }} == True"
 
 

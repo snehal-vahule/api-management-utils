@@ -1,7 +1,3 @@
-
-- debug:
-    msg: "yes we are here!"
-
 - name: print workspace
   debug: msg="workspace - {{ workspace }}"
 
