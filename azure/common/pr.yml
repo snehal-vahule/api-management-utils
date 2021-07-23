@@ -75,5 +75,5 @@ stages:
         service_base_path: ${{ parameters.service_base_path }}-${{ parameters.pr_label }}
         notify: true
         ${{ each param in parameters }}:
-          ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path') }}:
+          ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path', 'manual_approval_env') }}:
             ${{ param.key }}: ${{ param.value }}
