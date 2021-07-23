@@ -54,6 +54,8 @@ parameters:
     type: boolean
   - name: enable_status_monitoring
     type: boolean
+  - name: manual_approval_env
+    type: string
 
 stages:
   - ${{ if eq(parameters.environment, 'manual-approval') }}:
@@ -61,6 +63,7 @@ stages:
       parameters:
         stage_name: ${{ parameters.stage_name }}
         depends_on: ${{ parameters.depends_on }}
+        manual_approval_env: ${{ parameters.manual_approval_env }}
   - ${{ if not(eq(parameters.environment, 'manual-approval')) }}:
     - template: ./deploy-stage.yml
       parameters:
