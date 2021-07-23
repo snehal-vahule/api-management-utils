@@ -11,8 +11,6 @@ parameters:
     type: boolean
   - name: deploy_template
   - name: prod_requires_approval
-  - name: manual_approval_env
-    type: string
 
 
 stages:
