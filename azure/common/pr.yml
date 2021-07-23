@@ -58,7 +58,6 @@ parameters:
   - name: manual_approval_env
     type: string
 
-
 stages:
   - ${{ if eq(parameters.environment, 'manual-approval') }}:
     - template: ./deploy-manual-approval.yml
