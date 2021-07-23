@@ -122,7 +122,6 @@ parameters:
       - secret_file_ids
       - secret_ids
       - config_ids
-      - manual_approval_env
   - name: _scoped_step_list_vars
     type: object
     displayName: Subset of scoped pipeline variables that are of type stepList
