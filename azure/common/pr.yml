@@ -4,6 +4,7 @@ parameters:
     values:
       - internal-dev
       - internal-dev-sandbox
+      - manual-approval
   - name: apigee_organization
   - name: aws_account
   - name: stage_name
