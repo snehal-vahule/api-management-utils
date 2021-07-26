@@ -67,7 +67,7 @@ stages:
         stage_name: ${{ parameters.stage_name }}
         depends_on: ${{ parameters.depends_on }}
         ${{ if eq(true, parameters.manual_approval_prod) }}:
-          manual_approval_env: manual-approval
+          manual_approval_env: manual-approval-prod
         ${{ if eq(false, parameters.manual_approval_prod) }}:
           manual_approval_env: ${{ parameters.manual_approval_env }}
   - ${{ if not(eq(parameters.environment, 'manual-approval')) }}:
