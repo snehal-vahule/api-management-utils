@@ -4,6 +4,7 @@ parameters:
     values:
       - internal-dev
       - internal-dev-sandbox
+      - manual-approval
   - name: apigee_organization
   - name: aws_account
   - name: stage_name
@@ -56,18 +57,23 @@ parameters:
     default: ''
   - name: manual_approval_env
     type: string
-    default: ''
-
 
 stages:
-  - template: ./deploy-stage.yml
-    parameters:
-      ${{ if eq(parameters.proxy_path, 'live')}}:
-        fully_qualified_service_name: ${{ parameters.service_name }}-${{ parameters.pr_label }}
-      ${{ if ne(parameters.proxy_path, 'live')}}:
-        fully_qualified_service_name: ${{ parameters.service_name }}-${{ parameters.pr_label }}-${{ parameters.proxy_path }}
-      service_base_path: ${{ parameters.service_base_path }}-${{ parameters.pr_label }}
-      notify: true
-      ${{ each param in parameters }}:
-        ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path') }}:
-          ${{ param.key }}: ${{ param.value }}
+  - ${{ if eq(parameters.environment, 'manual-approval') }}:
+    - template: ./deploy-manual-approval.yml
+      parameters:
+        stage_name: ${{ parameters.stage_name }}
+        depends_on: ${{ parameters.depends_on }}
+        manual_approval_env: ${{ parameters.manual_approval_env }}
+  - ${{ if not(eq(parameters.environment, 'manual-approval')) }}:
+    - template: ./deploy-stage.yml
+      parameters:
+        ${{ if eq(parameters.proxy_path, 'live')}}:
+          fully_qualified_service_name: ${{ parameters.service_name }}-${{ parameters.pr_label }}
+        ${{ if ne(parameters.proxy_path, 'live')}}:
+          fully_qualified_service_name: ${{ parameters.service_name }}-${{ parameters.pr_label }}-${{ parameters.proxy_path }}
+        service_base_path: ${{ parameters.service_base_path }}-${{ parameters.pr_label }}
+        notify: true
+        ${{ each param in parameters }}:
+          ${{ if notIn(param.key, 'deploy_review_sandbox', 'fully_qualified_service_name', 'service_base_path', 'manual_approval_env') }}:
+            ${{ param.key }}: ${{ param.value }}
