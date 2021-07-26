@@ -54,6 +54,11 @@ parameters:
     type: boolean
   - name: enable_status_monitoring
     type: boolean
+  - name: manual_approval_env
+    type: string
+  - name: manual_approval_prod
+    type: boolean
+    default: false
 
 stages:
   - ${{ if eq(parameters.environment, 'manual-approval') }}:
@@ -61,6 +66,10 @@ stages:
       parameters:
         stage_name: ${{ parameters.stage_name }}
         depends_on: ${{ parameters.depends_on }}
+        ${{ if eq(true, parameters.manual_approval_prod) }}:
+          manual_approval_env: manual-approval-prod
+        ${{ if eq(false, parameters.manual_approval_prod) }}:
+          manual_approval_env: ${{ parameters.manual_approval_env }}
   - ${{ if not(eq(parameters.environment, 'manual-approval')) }}:
     - template: ./deploy-stage.yml
       parameters:
@@ -69,5 +78,5 @@ stages:
         ${{ if ne('', parameters.fully_qualified_service_name) }}:
           fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
         ${{ each param in parameters }}:
-          ${{ if notIn(param.key, 'fully_qualified_service_name') }}:
+          ${{ if notIn(param.key, 'fully_qualified_service_name', 'manual_approval_env', 'manual_approval_prod') }}:
             ${{ param.key }}: ${{ param.value }}
