@@ -255,8 +255,95 @@ steps:
   - bash: |
       set -euo pipefail
 
+      if [[ "${{ parameters.apigee_environment }}" == "prod" ]]; then
+        export status_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(status-endpoint-api-key)" https://api.service.nhs.uk/${{ parameters.service_base_path }}/_status`
+        export ping_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(status-endpoint-api-key)" https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping`
+      else
+        export status_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(status-endpoint-api-key)" https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_status`
+        export ping_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(status-endpoint-api-key)" https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping`
+      fi
+
+      echo service_base_path = ${{ parameters.service_base_path }}
+      echo _status_response=$status_endpoint_response
+      echo _ping_response=$ping_endpoint_response
+      echo "##vso[task.setvariable variable=status_endpoint_response]$status_endpoint_response"
+      echo "##vso[task.setvariable variable=ping_endpoint_response]$ping_endpoint_response"
+    displayName: 'Check _ping and _status endpoints'
+
+  - bash: |
+      set -euo pipefail
+
+      echo "Setting stage name as snake case for monitoring"
       export MONITORING_STAGE_NAME="${{ replace(parameters.stage_name, '_', '-') }}"
       echo "MONITORING_STAGE_NAME=${MONITORING_STAGE_NAME}"
+      echo "##vso[task.setvariable variable=MONITORING_STAGE_NAME]$MONITORING_STAGE_NAME"
+     
+      if [[ "${{ parameters.service_base_path }}" == *"-pr-"* ]]; then
+        export is_pull_request=true
+      else
+        export is_pull_request=false
+      fi
+
+      if [[ $(status_endpoint_response) == "200" ]]; then
+        if [[ $is_pull_request == 'true' ]]; then
+          echo "_status endpoint is present in the proxy, however we dont monitor pull requests"
+          echo "##vso[task.setvariable variable=set_status_monitoring]false"   
+        else
+          if [[ "${{ parameters.enable_status_monitoring }}" == "False" ]]; then
+            echo "_status endpoint monitoring is disabled"
+            echo "##vso[task.setvariable variable=set_status_monitoring]false"
+          else
+            echo "_status endpoint is present in the proxy, we will enable monitoring by default"
+            echo "##vso[task.setvariable variable=set_status_monitoring]true"
+          fi
+        fi
+      else
+        if [[ $is_pull_request == 'true' ]]; then
+          echo "WARNING: Please add a _status endpoit to your proxy before releasing or your release will fail. Or use the flag 'enable_status_monitoring=false' if your API don't support _status healthcheck" 
+          echo "##vso[task.setvariable variable=set_status_monitoring]false"   
+        else
+          if [[ "${{ parameters.enable_status_monitoring }}" == "False" ]]; then
+            echo "_status endpoint monitoring is disabled"
+            echo "##vso[task.setvariable variable=set_status_monitoring]false"
+          else
+            echo "ERROR: Your proxy dont have a _status endpoint therefore we can't monitor this proxy and it should not be released"
+            exit 1
+          fi 
+        fi 
+      fi
+
+      if [[ $(ping_endpoint_response) == "200" ]]; then
+        if [[ $is_pull_request == 'true' ]]; then
+          echo "_ping endpoint is present in the proxy, however we dont monitor pull requests"
+          echo "##vso[task.setvariable variable=set_ping_monitoring]false"
+        else
+          if [[ "${{ parameters.enable_monitoring }}" == "False" ]]; then
+            echo "_ping endpoint monitoring is disabled"
+            echo "##vso[task.setvariable variable=set_ping_monitoring]false"
+          else
+            echo "_ping endpoint is present in the proxy, we will enable monitoring by default"
+            echo "##vso[task.setvariable variable=set_ping_monitoring]true"
+          fi
+        fi
+      else
+        if [[ $is_pull_request == 'true' ]]; then
+          echo "WARNING: Please add a _ping endpoit to your proxy before releasing or your release will fail." 
+          echo "##vso[task.setvariable variable=set_ping_monitoring]false"
+        else
+          if [[ "${{ parameters.enable_monitoring }}" == "False" ]]; then
+            echo "_ping endpoint monitoring is disabled"
+            echo "##vso[task.setvariable variable=set_ping_monitoring]false"
+          else
+            "ERROR: Your proxy dont have a _ping endpoint therefore we can't monitor this proxy and it should not be released"
+            exit 1
+          fi
+        fi
+      fi
+
+    displayName: 'Check monitoring'
+
+  - bash: |
+      set -euo pipefail
 
       if [[ "${{ parameters.apigee_environment }}" == "prod" ]]; then
         export url="https://api.service.nhs.uk/monitoring-sd/service"
@@ -271,79 +358,8 @@ steps:
       echo "##vso[task.setvariable variable=url]$url"
       echo "##vso[task.setvariable variable=status_body]$status_body"
       echo "##vso[task.setvariable variable=ping_body]$ping_body"
-    displayName: 'Set monitoring variables'
-
-
-  - ${{ if eq(parameters.enable_monitoring, true) }}:
-    - bash: |
-        set -euo pipefail
-
-        if [[ "${{ parameters.apigee_environment }}" == "prod" ]]; then
-          export ping_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(status-endpoint-api-key)" https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping`
-        else
-          export ping_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(status-endpoint-api-key)" https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping`
-        fi
-
-        echo _ping_response=$ping_endpoint_response
-        echo "##vso[task.setvariable variable=ping_endpoint_response]$ping_endpoint_response"
-      displayName: 'Check _ping'
-
-    - bash: |
-        set -euo pipefail
-      
-        if [[ "${{ parameters.service_base_path }}" == *"-pr-"* ]]; then
-          echo "##vso[task.setvariable variable=set_ping_monitoring]false"
-        else
-          if [[ $(ping_endpoint_response) == "200" ]]; then
-            echo "##vso[task.setvariable variable=set_ping_monitoring]true"
-          else
-            echo "##vso[task.logissue type=error]Your proxy dont have a _ping endpoint therefore we can't monitor this proxy and it should not be released, use the flag 'enable_monitoring=false' if your API doesn't support _ping healthcheck."
-            exit 1
-          fi
-        fi
-      displayName: 'Set ping endpoint monitoring'
-
-  - ${{ if eq(parameters.enable_monitoring, false) }}:
-    - bash :
-        echo "_ping endpoint monitoring is disabled"
-        echo "##vso[task.setvariable variable=set_ping_monitoring]false"
-      displayName: 'Set ping endpoint monitoring'
-
-  - ${{ if eq(parameters.enable_status_monitoring, true) }}:
-    - bash: |
-        set -euo pipefail
-
-        if [[ "${{ parameters.apigee_environment }}" == "prod" ]]; then
-          export status_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(status-endpoint-api-key)" https://api.service.nhs.uk/${{ parameters.service_base_path }}/_status`
-        else
-          export status_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(status-endpoint-api-key)" https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_status`
-        fi
-
-        echo _status_response=$status_endpoint_response
-        echo "##vso[task.setvariable variable=status_endpoint_response]$status_endpoint_response"
-      displayName: 'Check _status'
-
-    - bash: |
-        set -euo pipefail
-      
-        if [[ "${{ parameters.service_base_path }}" == *"-pr-"* ]]; then
-          echo "##vso[task.setvariable variable=set_status_monitoring]false"
-        else
-          if [[ $(status_endpoint_response) == "200" ]]; then
-            echo "##vso[task.setvariable variable=set_status_monitoring]true"
-          else
-            echo "##vso[task.logissue type=error]Your proxy dont have a _status endpoint therefore we can't monitor this proxy and it should not be released, use the flag 'enable_status_monitoring=false' if your API don't support _status healthcheck."
-            exit 1
-          fi
-        fi
-      displayName: 'Set status endpoint monitoring'
-
-  - ${{ if eq(parameters.enable_status_monitoring, false) }}:
-    - bash :
-        echo "_status endpoint monitoring is disabled"
-        echo "##vso[task.setvariable variable=set_status_monitoring]false"
-      displayName: 'Set status endpoint monitoring'
-
+    displayName: Set monitoring url and body
+ 
   - bash: |
       curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(status_body)' $(url)
     displayName: Enable _status monitoring
