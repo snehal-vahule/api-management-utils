@@ -1,0 +1,31 @@
+- name: "get product {{ product_slug }}"
+  uri:
+    url: "{{ products_uri }}/{{ product_slug }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    return_content: yes
+  register: get_product
+
+- name: get product
+  set_fact:
+    product: "{{ get_product.json }}"
+
+- block:
+  - name: "remove product apps {{ product_slug }}"
+    uri:
+      url: "{{ developers_uri }}/{{ dev_id_to_email[item.developerId] }}/apps/{{ item.appName | urlencode }}/keys/{{ item.consumerKey }}/apiproducts/{{ product_slug }}"
+      method: DELETE
+      headers:
+        Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    changed_when: yes
+    loop: "{{ product_app_map.get(product_slug, []) }}"
+    loop_control:
+      label: "app: {{ item.appName }} - {{ item.appId }}"
+
+  - name: "removing product {{ product_slug }}"
+    uri:
+      url: "{{ products_uri }}/{{ product_slug }}"
+      method: DELETE
+      headers:
+        Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    changed_when: yes
