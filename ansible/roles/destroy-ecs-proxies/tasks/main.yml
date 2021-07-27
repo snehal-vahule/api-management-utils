@@ -27,6 +27,10 @@
     task_arns: "{{ list_tasks.stdout | from_json }}"
   when: list_tasks.rc == 0
 
+- name: print tasks
+  debug:
+    msg: "{{ task_arns }}"
+
 - name: kill tasks
   command: >
     {{ aws_cmd }} ecs stop-task --cluster apis-{{ apigee_environment }} --task {{ item }}
