@@ -11,7 +11,7 @@ parameters:
     type: string
   - name: has_ecs_backend
     type: boolean
-  - name: APIGEE_ENVIRONMENT
+  - name: environment
     type: string
   - name: remove_ecr_build_role
     type: boolean
@@ -86,12 +86,12 @@ stages:
                       set -euo pipefail
                       export SERVICE_NAME="${{ parameters.service_name }}"
                       export SERVICE_NAME_SHORT="${{ parameters.service_name_short }}"
-                      export has_ecs_backend="${{ parameters.has_ecs_backend }}"
-                      export APIGEE_ENVIRONMENT="${{ parameters.APIGEE_ENVIRONMENT }}"
+                      export APIGEE_ENVIRONMENT="${{ parameters.environment }}"
                       export APIGEE_ORG="nhsd-${{ parameters.apigee_org }}"
                       export APIGEE_ACCESS_TOKEN="$(secret.${{ parameters.apigee_org }}_API_ACCESS_TOKEN)"
                       export AWS_ACCOUNT="${{ parameters.aws_account }}"
                       export AWS_PROFILE="${{ parameters.aws_profile }}"
+                      export has_ecs_backend="${{ parameters.has_ecs_backend }}"
                       export remove_ecr_build_role="${{ parameters.remove_ecr_build_role }}"
                       export force_remove_from_apps="${{ parameters.force_remove_from_apps }}"
                       ANSIBLE_FORCE_COLOR=yes make -C ansible remove-target-proxy
