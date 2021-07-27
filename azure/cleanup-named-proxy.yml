@@ -44,7 +44,7 @@ stages:
           service_name: ${{ parameters.service_name }}
           service_name_short: ${{ parameters.service_name_short }}
           has_ecs_backend: ${{ parameters.has_ecs_backend }}
-          APIGEE_ENVIRONMENT: ${{ parameters.environment }}
+          environment: ${{ parameters.environment }}
           remove_ecr_build_role: ${{ parameters.remove_ecr_build_role }}
           force_remove_from_apps: ${{ parameters.force_remove_from_apps }}
           aws_account: ptl
