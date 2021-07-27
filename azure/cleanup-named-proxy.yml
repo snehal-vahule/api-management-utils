@@ -38,7 +38,7 @@ parameters:
 
 stages:
   - ${{ if in(parameters.environment, 'internal-qa', 'ref', 'internal-qa-sandbox', 'internal-dev-sandbox', 'internal-dev') }}:
-      - template: ./components/cleanup-proxy-choose-approval.yml
+      - template: ./components/remove-target-proxy.yml
         parameters:
           apigee_org: nonprod         
           service_name: ${{ parameters.service_name }}
@@ -47,9 +47,12 @@ stages:
           APIGEE_ENVIRONMENT: ${{ parameters.environment }}
           remove_ecr_build_role: ${{ parameters.remove_ecr_build_role }}
           force_remove_from_apps: ${{ parameters.force_remove_from_apps }}
+          aws_account: ptl
+          aws_profile: apm_ptl
+          approval_env: infrastructure-approval-ptl
 
   - ${{ if in(parameters.environment, 'dev', 'int', 'sandbox', 'prod') }}:
-      - template: ./components/cleanup-proxy-choose-approval.yml
+      - template: ./components/remove-target-proxy.yml
         parameters:
           apigee_org: prod
           service_name: ${{ parameters.service_name }}
@@ -58,3 +61,10 @@ stages:
           APIGEE_ENVIRONMENT: ${{ parameters.environment }}
           remove_ecr_build_role: ${{ parameters.remove_ecr_build_role }}
           force_remove_from_apps: ${{ parameters.force_remove_from_apps }}
+          ${{ if eq(parameters.APIGEE_ENVIRONMENT, 'prod') }}:
+            aws_account: prod
+            aws_profile: apm_prod
+          ${{ if ne(parameters.APIGEE_ENVIRONMENT, 'prod') }}:
+            aws_account: ptl
+            aws_profile: apm_ptl
+          approval_env: infrastructure-approval-prod
