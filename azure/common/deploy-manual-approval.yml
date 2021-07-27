@@ -2,6 +2,8 @@ parameters:
   - name: stage_name
   - name: depends_on
     type: object
+  - name: manual_approval_env
+    type: string
 
 stages:
   - stage: ${{ parameters.stage_name }}
@@ -9,9 +11,10 @@ stages:
     jobs:
       - deployment: deploy
         displayName: Manual Approval Required
+        timeoutInMinutes: 60
         pool:
           vmImage: "Ubuntu-16.04"
-        environment: "manual-approval"
+        environment: ${{ parameters.manual_approval_env }}
         strategy:
           runOnce:
             deploy:
