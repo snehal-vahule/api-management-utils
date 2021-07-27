@@ -29,7 +29,7 @@
 
 - name: print tasks
   debug:
-    msg: "{{ task_arns }}"
+    msg: "{{ list_tasks }}"
 
 # - name: kill tasks
 #   command: >
