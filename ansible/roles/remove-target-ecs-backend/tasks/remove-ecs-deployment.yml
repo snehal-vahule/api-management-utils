@@ -5,6 +5,9 @@
     service_id: "{{  ns_service_tuple.0 }}"
     pr_number: "{{ ns_service_tuple.2 |  regex_replace('^' + ns_service_tuple.0 + '-', '')  }}"
 
+- debug:
+    msg: "2: {{ns_service_tuple.2 }} | 0: {{ ns_service_tuple.0 }} | 1: {{ ns_service_tuple.1 }} | pr {{ pr_number }}"
+
 - name: "remove target ecs service {{ apigee_environment }} - {{ namespaced_name }}"
   include_role:
     name: destroy-ecs-proxies
