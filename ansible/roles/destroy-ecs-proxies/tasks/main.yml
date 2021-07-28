@@ -1,6 +1,10 @@
 - name: print workspace
   debug: msg="workspace - {{ workspace }}"
 
+- name: print for debug 
+  debug:
+    msg: "{{ service_id }}${{ sub_workspace }}"
+
 - name: scale down
   command: >
     {{ aws_cmd }} ecs update-service --cluster apis-{{ apigee_environment }}
