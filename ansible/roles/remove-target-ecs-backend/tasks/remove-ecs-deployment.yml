@@ -3,7 +3,7 @@
     apigee_environment: "{{ ns_service_tuple.1 }}"
     namespaced_name: "{{ ns_service_tuple.2 }}"
     service_id: "{{  ns_service_tuple.0 }}"
-    pr_number: "{{ ns_service_tuple.2 |  regex_replace('^' + ns_service_tuple.0 + '-', '')  }}"
+    pr_number: ""
 
 - name: "remove target ecs service {{ apigee_environment }} - {{ namespaced_name }}"
   include_role:
