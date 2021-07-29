@@ -41,21 +41,35 @@ class ActionModule(ApigeeAction):
 
         developer_details = task_vars.get(DEVELOPER_DETAILS)
         if not developer_details:
+            developer_details = []
+            params = {"expand": True}
             url = (
                 constants.APIGEE_BASE_URL
-                + f"organizations/{args.organization}/developers?expand=true"
+                + f"organizations/{args.organization}/developers"
             )
-            resp = utils.get(url, args.access_token)
-            if resp.get("failed"):
-                return resp
-            developer_details = resp["response"]["body"]["developer"]
+            while True:
+                resp = utils.get(url, args.access_token, params=params)
+                if resp.get("failed"):
+                    return resp
+                devs = resp["response"]["body"]["developer"]
+                developer_details.extend(devs)
+                if len(devs) == 1000:
+                    # last developer's ID as startKey will be included
+                    # in next request, so pop now to de-dupe.
+                    last_dev = developer_details.pop()
+                    params["startKey"] = last_dev["developerId"]
+                else:
+                    break
+
         try:
-            i = bisect.bisect_left(
-                [d["developerId"] for d in developer_details],
-                args._app_data["developerId"],
-            )
+            developer_id = args._app_data["developerId"]
+            developer_ids = [d["developerId"] for d in developer_details]
+            i = bisect.bisect_left(developer_ids, developer_id)
+            if i == len(developer_details):
+                raise RuntimeError(f"Unable to find developer with id {developer_id}")
         except RuntimeError as e:
-            return json.loads(str(e))
+            return {"failed": True, "error": str(e)}
+        
         developer = developer_details[i]
 
         delta = utils.delta(before, after)

@@ -25,7 +25,7 @@ def delta(before, after, keys_to_ignore=None):
     )
 
 
-def request(method, url, access_token, json=None, headers=None, status_code=None, session=None):
+def request(method, url, access_token, json=None, headers=None, status_code=None, session=None, params=None):
     if not status_code:
         status_code = [200]
 
@@ -36,7 +36,7 @@ def request(method, url, access_token, json=None, headers=None, status_code=None
 
     if session is None:
         session = requests
-    response = session.request(method, url, json=json, headers=headers)
+    response = session.request(method, url, json=json, headers=headers, params=params)
 
     response_dict = {
         "response": {"status_code": response.status_code, "reason": response.reason,},
