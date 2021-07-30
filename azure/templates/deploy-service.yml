@@ -292,7 +292,6 @@ steps:
         fi
       displayName: 'Check _ping'
 
-
     - bash: |
         set -euo pipefail
       
