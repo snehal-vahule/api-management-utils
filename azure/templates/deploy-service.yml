@@ -335,8 +335,8 @@ steps:
           export status_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(status-endpoint-api-key)" https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_status`
         fi
 
-          echo _status_response=$status_endpoint_response
-          echo "##vso[task.setvariable variable=status_endpoint_response]$status_endpoint_response"
+        echo _status_response=$status_endpoint_response
+        echo "##vso[task.setvariable variable=status_endpoint_response]$status_endpoint_response"
        
         if [[ $(status_endpoint_response) != "200" ]]; then
           echo "##vso[task.setvariable variable=set_status_monitoring]false"
