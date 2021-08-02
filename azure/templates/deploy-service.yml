@@ -336,7 +336,7 @@ steps:
 
   - bash: |
       curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d '$(status_body)' $(url)
-      if [[ "${{ parameters.enable_status_monitoring }}" == "false" ]]; then
+      if [[ "${{ parameters.enable_status_monitoring }}" != "true" ]]; then
         echo $'\n_status endpoint monitoring is disabled'
       fi
     displayName: Disable _status monitoring
@@ -349,7 +349,7 @@ steps:
 
   - bash: |
       curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d '$(ping_body)' $(url)
-      if [[ "${{ parameters.enable_monitoring }}" == "false" ]]; then
+      if [[ "${{ parameters.enable_monitoring }}" != "true" ]]; then
         echo $'\n_ping endpoint monitoring is disabled'
       fi
     displayName: Disable _ping monitoring
