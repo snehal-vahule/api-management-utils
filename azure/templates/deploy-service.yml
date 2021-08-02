@@ -272,13 +272,13 @@ steps:
 
       echo "${{ parameters.enable_monitoring }}"
       echo "${{ parameters.enable_status_monitoring }}"
-      if [[ "${{ parameters.enable_monitoring }}" == "true" ]] && [[ "${{ parameters.service_base_path }}" != *"-pr-"* ]]; then
+      if [[ "${{ parameters.enable_monitoring }}" == 'True' ]] && [[ "${{ parameters.service_base_path }}" != *"-pr-"* ]]; then
         echo "##vso[task.setvariable variable=enable_ping_monitoring]true"
       else
         echo "##vso[task.setvariable variable=enable_ping_monitoring]false"
       fi
 
-      if [[ "${{ parameters.enable_status_monitoring }}" == "true" ]] && [[ "${{ parameters.service_base_path }}" != *"-pr-"* ]]; then
+      if [[ "${{ parameters.enable_status_monitoring }}" == 'True' ]] && [[ "${{ parameters.service_base_path }}" != *"-pr-"* ]]; then
         echo "##vso[task.setvariable variable=enable_status_monitoring]true"
       else
         echo "##vso[task.setvariable variable=enable_status_monitoring]false"
@@ -338,7 +338,7 @@ steps:
 
   - bash: |
       curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d '$(status_body)' $(url)
-      if [[ "${{ parameters.enable_status_monitoring }}" != "true" ]]; then
+      if [[ "${{ parameters.enable_status_monitoring }}" != 'True' ]]; then
         echo $'\n_status endpoint monitoring is disabled'
       fi
     displayName: Disable _status monitoring
@@ -351,7 +351,7 @@ steps:
 
   - bash: |
       curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d '$(ping_body)' $(url)
-      if [[ "${{ parameters.enable_monitoring }}" != "true" ]]; then
+      if [[ "${{ parameters.enable_monitoring }}" != 'True' ]]; then
         echo $'\n_ping endpoint monitoring is disabled'
       fi
     displayName: Disable _ping monitoring
