@@ -337,10 +337,11 @@ steps:
     condition: eq(variables['enable_status_monitoring'], 'true')
 
   - bash: |
-      if [[ "${{ parameters.enable_status_monitoring }}" != 'True' ]]; then
-        echo $'\n_status endpoint monitoring is disabled'
-      fi
       curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d '$(status_body)' $(url)
+      echo
+      if [[ "${{ parameters.enable_status_monitoring }}" != 'True' ]]; then
+        echo "_status endpoint monitoring is disabled"
+      fi
     displayName: Disable _status monitoring
     condition: eq(variables['enable_status_monitoring'], 'false')
 
@@ -350,10 +351,11 @@ steps:
     condition: eq(variables['enable_ping_monitoring'], 'true')
 
   - bash: |
-      if [[ "${{ parameters.enable_monitoring }}" != 'True' ]]; then
-        echo $'\n_ping endpoint monitoring is disabled'
-      fi
       curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d '$(ping_body)' $(url)
+      echo
+      if [[ "${{ parameters.enable_monitoring }}" != 'True' ]]; then
+        echo "_ping endpoint monitoring is disabled"
+      fi
     displayName: Disable _ping monitoring
     condition: eq(variables['enable_ping_monitoring'], 'false')
 
