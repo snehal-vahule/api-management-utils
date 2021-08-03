@@ -270,15 +270,13 @@ steps:
         export ping_body='{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
       fi
 
-      if [[ "${{ parameters.enable_monitoring }}" == 'True' ]] && [[ "${{ parameters.service_base_path }}" != *"-pr-"* ]]; then
-        echo "##vso[task.setvariable variable=enable_ping_monitoring]true"
-      else
+      echo "##vso[task.setvariable variable=enable_ping_monitoring]${{ parameters.enable_monitoring }}"
+      if [[ "${{ parameters.service_base_path }}" == *"-pr-"* ]]; then
         echo "##vso[task.setvariable variable=enable_ping_monitoring]false"
       fi
 
-      if [[ "${{ parameters.enable_status_monitoring }}" == 'True' ]] && [[ "${{ parameters.service_base_path }}" != *"-pr-"* ]]; then
-        echo "##vso[task.setvariable variable=enable_status_monitoring]true"
-      else
+      echo "##vso[task.setvariable variable=enable_status_monitoring]${{ parameters.enable_status_monitoring }}"
+      if [[ "${{ parameters.service_base_path }}" == *"-pr-"* ]]; then
         echo "##vso[task.setvariable variable=enable_status_monitoring]false"
       fi      
 
