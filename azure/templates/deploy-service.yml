@@ -270,15 +270,15 @@ steps:
         export ping_body='{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
       fi
 
+      echo "##vso[task.setvariable variable=is_pull_request]false"
       echo "##vso[task.setvariable variable=enable_ping_monitoring]${{ parameters.enable_monitoring }}"
+      echo "##vso[task.setvariable variable=enable_status_monitoring]${{ parameters.enable_status_monitoring }}"
+
       if [[ "${{ parameters.service_base_path }}" == *"-pr-"* ]]; then
         echo "##vso[task.setvariable variable=enable_ping_monitoring]false"
-      fi
-
-      echo "##vso[task.setvariable variable=enable_status_monitoring]${{ parameters.enable_status_monitoring }}"
-      if [[ "${{ parameters.service_base_path }}" == *"-pr-"* ]]; then
         echo "##vso[task.setvariable variable=enable_status_monitoring]false"
-      fi      
+        echo "##vso[task.setvariable variable=is_pull_request]true"
+      fi
 
       echo "##vso[task.setvariable variable=url]$url"
       echo "##vso[task.setvariable variable=status_body]$status_body"
@@ -339,7 +339,7 @@ steps:
         echo "_status endpoint monitoring is disabled"
       fi
     displayName: Disable _status monitoring
-    condition: eq(variables['enable_status_monitoring'], 'false')
+    condition: and(eq(variables['enable_status_monitoring'], 'false'), eq(variables['is_pull_request'], 'false'))
 
   - bash: |
       curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(ping_body)' $(url)
@@ -353,7 +353,7 @@ steps:
         echo "_ping endpoint monitoring is disabled"
       fi
     displayName: Disable _ping monitoring
-    condition: eq(variables['enable_ping_monitoring'], 'false')
+    condition: and(eq(variables['enable_ping_monitoring'], 'false'), eq(variables['is_pull_request'], 'false'))
 
   - ${{ each post_deploy_step in parameters.post_deploy }}:
     - ${{ post_deploy_step }}
