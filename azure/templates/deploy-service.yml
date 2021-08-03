@@ -328,11 +328,15 @@ steps:
     condition: eq(variables['enable_status_monitoring'], 'true')
 
   - bash: |
+      set -euo pipefail
+
       curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(status_body)' $(url)
     displayName: Enable _status monitoring
     condition: eq(variables['enable_status_monitoring'], 'true')
 
   - bash: |
+      set -euo pipefail
+
       curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d '$(status_body)' $(url)
       echo
       echo "_status endpoint monitoring is disabled"
@@ -340,11 +344,15 @@ steps:
     condition: and(eq(variables['enable_status_monitoring'], 'false'), eq(variables['is_pull_request'], 'false'))
 
   - bash: |
+      set -euo pipefail
+
       curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(ping_body)' $(url)
     displayName: Enable _ping monitoring
     condition: eq(variables['enable_ping_monitoring'], 'true')
 
   - bash: |
+      set -euo pipefail
+
       curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d '$(ping_body)' $(url)
       echo
       echo "_ping endpoint monitoring is disabled"
