@@ -298,7 +298,7 @@ steps:
       echo _ping_response=$ping_endpoint_response
       echo "##vso[task.setvariable variable=ping_endpoint_response]$ping_endpoint_response"
     
-      if [[ $(ping_endpoint_response) != "200" ]]; then
+      if [[ $ping_endpoint_response != "200" ]]; then
         echo "##vso[task.logissue type=error]Your proxy doesn't have a _ping endpoint therefore we can't monitor this proxy and it should not be released, use the flag 'enable_monitoring=false' if your API doesn't support _ping healthcheck."
         echo "##vso[task.setvariable variable=enable_ping_monitoring]false"
         exit 1       
@@ -318,7 +318,7 @@ steps:
       echo _status_response=$status_endpoint_response
       echo "##vso[task.setvariable variable=status_endpoint_response]$status_endpoint_response"
       
-      if [[ $(status_endpoint_response) != "200" ]]; then
+      if [[ $status_endpoint_response != "200" ]]; then
         echo "##vso[task.logissue type=error]Your proxy doesn't have a _status endpoint therefore we can't monitor this proxy and it should not be released, use the flag 'enable_status_monitoring=false' if your API doesn't support _status healthcheck."
         echo "##vso[task.setvariable variable=enable_status_monitoring]false"
         exit 1            
