@@ -347,7 +347,7 @@ steps:
       echo
       echo "_status endpoint monitoring is disabled"
     displayName: Disable _status monitoring
-    # condition: and(succeeded(), eq(variables['check_and_enable_status'], 'false'), eq(variables['is_pull_request'], 'false'))
+    condition: and(succeeded(), eq(variables['check_and_enable_status'], 'false'), eq(variables['is_pull_request'], 'false'))
 
   - bash: |
       set -euo pipefail
