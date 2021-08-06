@@ -304,7 +304,7 @@ steps:
         exit 1       
       fi
     displayName: 'Check _ping'
-    # condition: eq(variables['enable_ping_monitoring'], 'true')
+    condition: eq(variables['enable_ping_monitoring'], 'true')
  
   - bash: |
       set -euo pipefail
@@ -324,7 +324,7 @@ steps:
         exit 1            
       fi
     displayName: 'Check _status'
-    # condition: eq(variables['enable_status_monitoring'], 'true')
+    condition: and(succeeded(), eq(variables['enable_status_monitoring'], 'true'))
 
   - bash: |
       set -euo pipefail
