@@ -323,8 +323,7 @@ steps:
         echo "##vso[task.logissue type=error]Your proxy doesn't have a _status endpoint therefore we can't monitor this proxy and it should not be released, use the flag 'enable_status_monitoring=false' if your API doesn't support _status healthcheck."
         echo "##vso[task.setvariable variable=enable_status_monitoring]false"
         exit 1            
-      fi
-      
+      fi     
     displayName: 'Check _status'
     condition: eq(variables['enable_status_monitoring'], 'true')
 
