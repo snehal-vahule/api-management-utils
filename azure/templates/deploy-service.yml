@@ -271,12 +271,12 @@ steps:
       fi
 
       echo "##vso[task.setvariable variable=is_pull_request]false"
-      # echo "##vso[task.setvariable variable=enable_ping_monitoring]${{ parameters.enable_monitoring }}"
-      # echo "##vso[task.setvariable variable=enable_status_monitoring]${{ parameters.enable_status_monitoring }}"
+      # echo "##vso[task.setvariable variable=check_and_enable_ping]${{ parameters.enable_monitoring }}"
+      # echo "##vso[task.setvariable variable=check_and_enable_status]${{ parameters.enable_status_monitoring }}"
 
       if [[ "${{ parameters.service_base_path }}" == *"-pr-"* ]]; then
-        # echo "##vso[task.setvariable variable=enable_ping_monitoring]false"
-        # echo "##vso[task.setvariable variable=enable_status_monitoring]false"
+        # echo "##vso[task.setvariable variable=check_and_enable_ping]false"
+        # echo "##vso[task.setvariable variable=check_and_enable_status]false"
         echo "##vso[task.setvariable variable=is_pull_request]true"
       fi
 
@@ -302,7 +302,7 @@ steps:
         exit 1       
       fi
     displayName: 'Check _ping'
-    condition: and(succeeded(), eq(variables['enable_ping_monitoring'], 'true'))
+    condition: and(succeeded(), eq(variables['check_and_enable_ping'], 'true'))
  
   - bash: |
       set -euo pipefail
@@ -321,14 +321,14 @@ steps:
         exit 1            
       fi
     displayName: 'Check _status'
-    condition: and(succeeded(), eq(variables['enable_status_monitoring'], 'true'))
+    condition: and(succeeded(), eq(variables['check_and_enable_status'], 'true'))
 
   - bash: |
       set -euo pipefail
 
       curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(status_body)' $(url)
     displayName: Enable _status monitoring
-    condition: and(succeeded(), eq(variables['enable_status_monitoring'], 'true'))
+    condition: and(succeeded(), eq(variables['check_and_enable_status'], 'true'))
 
   - bash: |
       set -euo pipefail
@@ -337,14 +337,14 @@ steps:
       echo
       echo "_status endpoint monitoring is disabled"
     displayName: Disable _status monitoring
-    condition: and(eq(variables['enable_status_monitoring'], 'false'), eq(variables['is_pull_request'], 'false'))
+    condition: and(eq(variables['check_and_enable_status'], 'false'), eq(variables['is_pull_request'], 'false'))
 
   - bash: |
       set -euo pipefail
 
       curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(ping_body)' $(url)
     displayName: Enable _ping monitoring
-    condition: and(succeeded(), eq(variables['enable_ping_monitoring'], 'true'))
+    condition: and(succeeded(), eq(variables['check_and_enable_ping'], 'true'))
 
   - bash: |
       set -euo pipefail
@@ -353,7 +353,7 @@ steps:
       echo
       echo "_ping endpoint monitoring is disabled"
     displayName: Disable _ping monitoring
-    condition: and(eq(variables['enable_ping_monitoring'], 'false'), eq(variables['is_pull_request'], 'false'))
+    condition: and(eq(variables['check_and_enable_ping'], 'false'), eq(variables['is_pull_request'], 'false'))
 
   - ${{ each post_deploy_step in parameters.post_deploy }}:
     - ${{ post_deploy_step }}
