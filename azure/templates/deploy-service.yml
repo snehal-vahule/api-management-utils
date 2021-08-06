@@ -189,6 +189,7 @@ steps:
       SERVICE_BASE_PATH=${{ parameters.service_base_path }} \
       APIGEE_ENVIRONMENT=${{ parameters.apigee_environment }} \
       make --no-print-directory  -C $(UTILS_DIR)/ansible deploy-ecs-proxies
+      exit 1
 
     displayName: Deploy ECS proxies
     condition: and(succeeded(), ne(variables['DEPLOY_ROLE'], ''))
