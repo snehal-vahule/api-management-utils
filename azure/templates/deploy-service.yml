@@ -271,12 +271,12 @@ steps:
       fi
 
       echo "##vso[task.setvariable variable=is_pull_request]false"
-      echo "##vso[task.setvariable variable=enable_ping_monitoring]${{ parameters.enable_monitoring }}"
-      echo "##vso[task.setvariable variable=enable_status_monitoring]${{ parameters.enable_status_monitoring }}"
+      echo "##vso[task.setvariable variable=check_and_enable_ping]${{ parameters.enable_monitoring }}"
+      echo "##vso[task.setvariable variable=check_and_enable_status]${{ parameters.enable_status_monitoring }}"
 
       if [[ "${{ parameters.service_base_path }}" == *"-pr-"* ]]; then
-        echo "##vso[task.setvariable variable=enable_ping_monitoring]false"
-        echo "##vso[task.setvariable variable=enable_status_monitoring]false"
+        echo "##vso[task.setvariable variable=check_and_enable_ping]false"
+        echo "##vso[task.setvariable variable=check_and_enable_status]false"
         echo "##vso[task.setvariable variable=is_pull_request]true"
       fi
 
@@ -284,7 +284,6 @@ steps:
       echo "##vso[task.setvariable variable=status_body]$status_body"
       echo "##vso[task.setvariable variable=ping_body]$ping_body"
     displayName: 'Set monitoring variables'
-
 
   - bash: |
       set -euo pipefail
@@ -297,14 +296,18 @@ steps:
 
       echo _ping_response=$ping_endpoint_response
       echo "##vso[task.setvariable variable=ping_endpoint_response]$ping_endpoint_response"
+
+      if [[ $ping_endpoint_response == "404" ]]; then
+        echo "##vso[task.logissue type=error]Your proxy doesn't have a _ping endpoint therefore we can't monitor this proxy and it should not be released, use the flag 'enable_monitoring=false' if your API doesn't support _ping healthcheck."
+        exit 1       
+      fi
     
       if [[ $ping_endpoint_response != "200" ]]; then
-        echo "##vso[task.logissue type=error]Your proxy doesn't have a _ping endpoint therefore we can't monitor this proxy and it should not be released, use the flag 'enable_monitoring=false' if your API doesn't support _ping healthcheck."
-        echo "##vso[task.setvariable variable=enable_ping_monitoring]false"
+        echo "##vso[task.logissue type=error]Your proxy's _ping endpoint has encounted an error and should not be released until it is resolved."
         exit 1       
-      fi 
+      fi
     displayName: 'Check _ping'
-    condition: eq(variables['enable_ping_monitoring'], 'true')
+    condition: and(succeeded(), eq(variables['check_and_enable_ping'], 'true'))
  
   - bash: |
       set -euo pipefail
@@ -317,22 +320,25 @@ steps:
 
       echo _status_response=$status_endpoint_response
       echo "##vso[task.setvariable variable=status_endpoint_response]$status_endpoint_response"
-      
-      if [[ $status_endpoint_response != "200" ]]; then
+
+      if [[ $status_endpoint_response == "404" ]]; then
         echo "##vso[task.logissue type=error]Your proxy doesn't have a _status endpoint therefore we can't monitor this proxy and it should not be released, use the flag 'enable_status_monitoring=false' if your API doesn't support _status healthcheck."
-        echo "##vso[task.setvariable variable=enable_status_monitoring]false"
         exit 1            
       fi
       
+      if [[ $status_endpoint_response != "200" ]]; then
+        echo "##vso[task.logissue type=error]Your proxy's _status endpoint has encounted an error and should not be released until it is resolved."
+        exit 1            
+      fi
     displayName: 'Check _status'
-    condition: eq(variables['enable_status_monitoring'], 'true')
+    condition: and(succeeded(), eq(variables['check_and_enable_status'], 'true'))
 
   - bash: |
       set -euo pipefail
 
       curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(status_body)' $(url)
     displayName: Enable _status monitoring
-    condition: eq(variables['enable_status_monitoring'], 'true')
+    condition: and(succeeded(), eq(variables['check_and_enable_status'], 'true'))
 
   - bash: |
       set -euo pipefail
@@ -341,14 +347,14 @@ steps:
       echo
       echo "_status endpoint monitoring is disabled"
     displayName: Disable _status monitoring
-    condition: and(eq(variables['enable_status_monitoring'], 'false'), eq(variables['is_pull_request'], 'false'))
+    condition: and(succeeded(), eq(variables['check_and_enable_status'], 'false'), eq(variables['is_pull_request'], 'false'))
 
   - bash: |
       set -euo pipefail
 
       curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(ping_body)' $(url)
     displayName: Enable _ping monitoring
-    condition: eq(variables['enable_ping_monitoring'], 'true')
+    condition: and(succeeded(), eq(variables['check_and_enable_ping'], 'true'))
 
   - bash: |
       set -euo pipefail
@@ -357,7 +363,7 @@ steps:
       echo
       echo "_ping endpoint monitoring is disabled"
     displayName: Disable _ping monitoring
-    condition: and(eq(variables['enable_ping_monitoring'], 'false'), eq(variables['is_pull_request'], 'false'))
+    condition: and(succeeded(), eq(variables['check_and_enable_ping'], 'false'), eq(variables['is_pull_request'], 'false'))
 
   - ${{ each post_deploy_step in parameters.post_deploy }}:
     - ${{ post_deploy_step }}
