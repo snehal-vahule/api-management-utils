@@ -304,7 +304,7 @@ steps:
         exit 1       
       fi
     displayName: 'Check _ping'
-    condition: eq(variables['enable_ping_monitoring'], 'true')
+    condition: and(succeeded(), eq(variables['enable_ping_monitoring'], 'true'))
  
   - bash: |
       set -euo pipefail
@@ -331,7 +331,7 @@ steps:
 
       curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(status_body)' $(url)
     displayName: Enable _status monitoring
-    condition: eq(variables['enable_status_monitoring'], 'true')
+    condition: and(succeeded(), eq(variables['enable_status_monitoring'], 'true'))
 
   - bash: |
       set -euo pipefail
@@ -347,7 +347,7 @@ steps:
 
       curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(ping_body)' $(url)
     displayName: Enable _ping monitoring
-    condition: eq(variables['enable_ping_monitoring'], 'true')
+    condition: and(succeeded(), eq(variables['enable_ping_monitoring'], 'true'))
 
   - bash: |
       set -euo pipefail
