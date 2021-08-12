@@ -1,0 +1,80 @@
+- name: remove target proxy
+  hosts: 127.0.0.1
+  connection: local
+  gather_facts: yes
+
+  vars:
+    APIGEE_ENVIRONMENT: "{{ lookup('env', 'APIGEE_ENVIRONMENT') }}" 
+    APIGEE_ORG: "{{ lookup('env', 'APIGEE_ORG') }}"
+    APIGEE_ACCESS_TOKEN: "{{ lookup('env', 'APIGEE_ACCESS_TOKEN') }}"
+    SERVICE_NAME: "{{ lookup('env', 'SERVICE_NAME') }}" 
+    SERVICE_NAME_SHORT: "{{ lookup('env', 'SERVICE_NAME_SHORT') }}"  
+    service_name_env: "{{SERVICE_NAME}}-{{APIGEE_ENVIRONMENT}}"
+    has_ecs_backend: "{{ lookup('env', 'has_ecs_backend') }}"
+    account:  "{{ lookup('env','AWS_ACCOUNT') }}"
+    aws_profile: "{{ lookup('env', 'AWS_PROFILE') }}"
+    remove_ecr_build_role: "{{ lookup('env', 'remove_ecr_build_role') }}"
+    service_id: "{{ SERVICE_NAME_SHORT }}"
+    force_remove_from_apps: "{{ lookup('env', 'force_remove_from_apps') }}"
+    target_service_id: "{{ SERVICE_NAME_SHORT }}"
+
+  pre_tasks:
+    - name: check APIGEE_ORG
+      fail:
+        msg: "APIGEE_ORG not set"
+      when: not APIGEE_ORG
+
+    - name: check APIGEE_ACCESS_TOKEN
+      fail:
+        msg: "APIGEE_ACCESS_TOKEN not set"
+      when: not APIGEE_ACCESS_TOKEN
+
+    - name: check APIGEE_ENVIRONMENT
+      fail:
+        msg: "APIGEE_ENVIRONMENT not set"
+      when: not APIGEE_ENVIRONMENT
+
+    - name: check AWS_ACCOUNT
+      fail:
+        msg: "AWS_ACCOUNT not set"
+      when: not account
+
+    - name: check AWS_PROFILE
+      fail:
+        msg: "AWS_PROFILE not set"
+      when: not aws_profile
+
+    - name: check SERVICE_NAME
+      fail:
+        msg: "SERVICE_NAME not set"
+      when: not SERVICE_NAME
+
+    - name: check SERVICE_NAME_SHORT
+      fail:
+        msg: "SERVICE_NAME_SHORT not set"
+      when: not SERVICE_NAME_SHORT
+
+  roles:
+    - remove-target-products
+    - remove-target-portal-apis
+    - remove-target-proxies
+    - remove-target-specs 
+
+  tasks:
+    - name: setup-facts
+      include_role:
+        name: setup-facts
+      when: remove_ecr_build_role or has_ecs_backend
+
+    - name: remove ecs backend
+      include_role:
+        name: remove-target-ecs-backend
+      when: has_ecs_backend
+
+    - name: remove ecs backend
+      include_role:
+        name: "{{ item }}"
+      with_items:
+        - destroy-api-deployment-pre-reqs
+        - remove-ecr-build-role
+      when: remove_ecr_build_role

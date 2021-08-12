@@ -1,0 +1,70 @@
+name: "$(SourceBranchName)+$(BuildID)"
+
+trigger: none
+
+pr: none
+
+parameters:
+  - name: service_name
+    displayName: Name of service to be removed
+    type: string
+    default: ""
+
+  - name: service_name_short
+    displayName: Short name of service to be removed
+    type: string
+    default: ""
+
+  - name: environment
+    displayName: Name of target environment
+    type: string
+    default: ""
+
+  - name: has_ecs_backend
+    displayName: Target service has ecs backend
+    type: boolean
+    default: False
+
+  - name: remove_ecr_build_role
+    displayName: Remove the ECR build role and pre-reqs for all deployments 
+    type: boolean
+    default: False
+  
+  - name: force_remove_from_apps
+    displayName: Force remove specifed product from subscribed apps
+    type: boolean
+    default: False
+
+
+stages:
+  - ${{ if in(parameters.environment, 'internal-qa', 'ref', 'internal-qa-sandbox', 'internal-dev-sandbox', 'internal-dev') }}:
+      - template: ./components/remove-target-proxy.yml
+        parameters:
+          apigee_org: nonprod         
+          service_name: ${{ parameters.service_name }}
+          service_name_short: ${{ parameters.service_name_short }}
+          has_ecs_backend: ${{ parameters.has_ecs_backend }}
+          environment: ${{ parameters.environment }}
+          remove_ecr_build_role: ${{ parameters.remove_ecr_build_role }}
+          force_remove_from_apps: ${{ parameters.force_remove_from_apps }}
+          aws_account: ptl
+          aws_profile: apm_ptl
+          approval_env: infrastructure-approval-ptl
+
+  - ${{ if in(parameters.environment, 'dev', 'int', 'sandbox', 'prod') }}:
+      - template: ./components/remove-target-proxy.yml
+        parameters:
+          apigee_org: prod
+          service_name: ${{ parameters.service_name }}
+          service_name_short: ${{ parameters.service_name_short }}
+          has_ecs_backend: ${{ parameters.has_ecs_backend }}
+          environment: ${{ parameters.environment }}
+          remove_ecr_build_role: ${{ parameters.remove_ecr_build_role }}
+          force_remove_from_apps: ${{ parameters.force_remove_from_apps }}
+          ${{ if eq(parameters.environment, 'prod') }}:
+            aws_account: prod
+            aws_profile: apm_prod
+          ${{ if ne(parameters.environment, 'prod') }}:
+            aws_account: ptl
+            aws_profile: apm_ptl
+          approval_env: infrastructure-approval-prod

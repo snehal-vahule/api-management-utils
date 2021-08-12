@@ -1,0 +1,30 @@
+- name: get specs
+  uri:
+    url: "{{ specs_list_uri }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    return_content: yes
+  register: specs
+
+- debug:
+    msg: "{{ specs }}"
+
+- name: set spec_filter
+  set_fact:
+    spec_filter: "{{ specs.json.contents | to_json | from_json | json_query(item) }}"
+  with_items: 
+    - "[?contains(name, '{{ service_name_env }}')]"   
+  register: search_result
+
+- name: make a list and set portal_api
+  set_fact:
+    target_specs: "{{ search_result.results | map(attribute='ansible_facts.spec_filter') | list | flatten }}"
+
+- name: removing spec
+  uri:
+    url: "{{ specs_resource_uri }}/{{ target_specs[0].id }}"
+    method: DELETE
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+  changed_when: yes
+  when: target_specs|length>0
