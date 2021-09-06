@@ -40,7 +40,7 @@
         {{ aws_cmd }} iam update-assume-role-policy --role-name {{ build_role_name }}
         --policy-document file://{{ assume_role_policy_json.path }}
       register: create_role
-      when: get_role.rc == 0
+      when: get_role.rc == 0 and (get_role.stdout | from_json).get('AssumeRolePolicyDocument') != assume_role_policy
 
   always:
     - name: remove temp file
