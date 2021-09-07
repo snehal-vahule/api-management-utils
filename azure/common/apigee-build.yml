@@ -24,6 +24,9 @@ parameters:
   - name: notify
     type: boolean
     default: true
+  - name: cache_steps
+    type: stepList
+    default: []
 
 jobs:
   - job: build
@@ -50,6 +53,8 @@ jobs:
           echo instance-id: "${instance_id}"
           echo connect to: https://eu-west-2.console.aws.amazon.com/systems-manager/session-manager/${instance_id}
           echo sudo su - ubuntu
+          or
+          echo ssh ubuntu@${instance_id}
           echo working directory: $(System.DefaultWorkingDirectory)
         displayName: print aws info
 
@@ -81,34 +86,48 @@ jobs:
             echo "Build.SourceVersion: $(Build.SourceVersion)"
             echo "Build.SourceVersionMessage: $(Build.SourceVersionMessage)"
 
-            COMMIT_SHA=""
+            if [[ ! -z $(NOTIFY_COMMIT_SHA) ]]; then
+                echo "##[debug]Using already provided NOTIFY_COMMIT_SHA=$(NOTIFY_COMMIT_SHA)"
+            else
+                NOTIFY_COMMIT_SHA=""
 
-            if [[ "$(Build.SourceBranch)" =~ ^refs/tags/.+$ ]]; then
-                echo "##[debug]Build appears to be a tag build"
-                echo "##[debug]Using Build.SourceVersion as COMMIT_SHA"
-                COMMIT_SHA="$(Build.SourceVersion)"
+                if [[ "$(Build.SourceBranch)" =~ ^refs/tags/.+$ ]]; then
+                    echo "##[debug]Build appears to be a tag build"
+                    echo "##[debug]Using Build.SourceVersion as NOTIFY_COMMIT_SHA"
+                    NOTIFY_COMMIT_SHA="$(Build.SourceVersion)"
+                fi
+
+                if [[ "$(Build.SourceBranch)" =~ ^refs/pull/.+$ ]]; then
+                    echo "##[debug]Build appears to be a pull request build"
+                    echo "##[debug]Extracting NOTIFY_COMMIT_SHA from Build.SourceVersionMessage"
+                    NOTIFY_COMMIT_SHA=`echo "$(Build.SourceVersionMessage)" | cut -d' ' -f2`
+                fi
+
+                if [[ -z $NOTIFY_COMMIT_SHA ]]; then
+                    echo "##[debug]Build does not appear to be pull or tag build"
+                    echo "##[debug]Using Build.SourceVersion as NOTIFY_COMMIT_SHA"
+                    NOTIFY_COMMIT_SHA="$(Build.SourceVersion)"
+                fi
+
+                echo "##vso[task.setvariable variable=NOTIFY_COMMIT_SHA]$NOTIFY_COMMIT_SHA"
             fi
-
-            if [[ "$(Build.SourceBranch)" =~ ^refs/pull/.+$ ]]; then
-                echo "##[debug]Build appears to be a pull request build"
-                echo "##[debug]Extracting COMMIT_SHA from Build.SourceVersionMessage"
-                COMMIT_SHA=`echo "$(Build.SourceVersionMessage)" | cut -d' ' -f2`
-            fi
-
-            if [[ -z $COMMIT_SHA ]]; then
-                echo "##[debug]Build does not appear to be pull or tag build"
-                echo "##[debug]Using Build.SourceVersion as COMMIT_SHA"
-                COMMIT_SHA="$(Build.SourceVersion)"
-            fi
-
-            echo "##vso[task.setvariable variable=COMMIT_SHA]$COMMIT_SHA"
-          displayName: Set COMMIT_SHA
+          displayName: Set NOTIFY_COMMIT_SHA
           condition: always()
 
         - template: '../components/update-github-status.yml'
           parameters:
             state: pending
             description: "Build started"
+
+      - bash: |
+          if [[ ! -z $(UTILS_PR_NUMBER) ]]; then
+            echo "##[debug]Triggered from utils repository, PR_NUMBER=$(UTILS_PR_NUMBER)"
+            echo "##vso[task.setvariable variable=PR_NUMBER]$(UTILS_PR_NUMBER)"
+          else
+            echo "##[debug]PR_NUMBER=$(System.PullRequest.PullRequestNumber)"
+            echo "##vso[task.setvariable variable=PR_NUMBER]$(System.PullRequest.PullRequestNumber)"
+          fi
+        displayName: Set PR_NUMBER
 
       - checkout: self
         path: "s/${{ parameters.service_name }}"
@@ -123,6 +142,9 @@ jobs:
         inputs:
           versionSpec: "3.8"
 
+      - ${{ each cache_step in parameters.cache_steps }}:
+          - ${{ cache_step }}
+
       - bash: |
           n=0
           until [ "$n" -ge 3 ]
@@ -132,10 +154,6 @@ jobs:
           done
         workingDirectory: "${{ parameters.service_name }}"
         displayName: Install project dependencies
-
-      - bash: "make check-licenses"
-        workingDirectory: "${{ parameters.service_name }}"
-        displayName: Check licenses
 
       - bash: "make lint"
         workingDirectory: "${{ parameters.service_name }}"
@@ -164,17 +182,19 @@ jobs:
       - checkout: common
         path: "s/${{ parameters.service_name }}/utils"
 
-# don't use cache in  aws build agents safely, currently
-#       - task: Cache@2
-#         inputs:
-#           key: poetry | $(Agent.OS) | ${{ parameters.service_name }}/utils/poetry.lock
-#           path: "${{ parameters.service_name }}/utils/.venv"
-#         displayName: cache utils dependencies
+      - task: s3-cache-action@1
+        inputs:
+          key: poetry | $(System.DefaultWorkingDirectory) | ${{ parameters.service_name }}/utils/poetry.lock
+          location: "${{ parameters.service_name }}/utils/.venv"
+          debug: true
+          alias: 'Utils'
+        displayName: cache utils dependencies
 
       - bash: |
             make install
             sleep 5
         workingDirectory: "${{ parameters.service_name }}/utils"
+        condition: ne(variables['CacheRestored-Utils'], 'true')
         displayName: "Install utils "
 
       - bash: |
@@ -182,7 +202,7 @@ jobs:
           export commit_hash="$(git -C ${{ parameters.service_name }} rev-parse --short HEAD)"
           # sha prefix is required docker gets upset if names contain -0 iirc
           export build_label="$(Build.BuildId)-sha${commit_hash}"
-          export pr_number="$(System.PullRequest.PullRequestNumber)"
+          export pr_number="$(PR_NUMBER)"
           export service_name="${{ parameters.service_name }}"
           export service_id="${{ parameters.short_service_name }}"
           export ANSIBLE_FORCE_COLOR=yes
@@ -191,7 +211,7 @@ jobs:
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
       - bash: |
-          tfenv use 0.12.29
+          tfenv use 0.14.6
         displayName: use terraforn
         condition: and(succeeded(), eq(variables['build_containers'], 'true'))
 
@@ -244,6 +264,7 @@ jobs:
           elif [ -f manifest_template.yml ]; then
              rsync -a manifest_template.yml dist
              make -C utils/ansible template-manifest
+             make -C utils/ansible validate-manifest
           fi
         workingDirectory: "${{ parameters.service_name }}"
         displayName: "Validate manifest (template) and copy to artifact"
@@ -251,6 +272,7 @@ jobs:
       - bash: |
           cd ${{ parameters.service_name }}/utils
           git rev-parse HEAD > ../dist/.utils-version
+        displayName: Snapshot utils version
 
       - publish: ${{ parameters.service_name}}/dist
         artifact: "$(Build.BuildNumber)"

@@ -5,9 +5,9 @@ from ansible_collections.nhsd.apigee.plugins.module_utils.models.ansible.deploy_
     DeployProduct,
 )
 from ansible_collections.nhsd.apigee.plugins.module_utils import utils
-
-
-APIGEE_BASE_URL = "https://api.enterprise.apigee.com/v1/"
+from ansible_collections.nhsd.apigee.plugins.module_utils.constants import (
+    APIGEE_BASE_URL,
+)
 
 
 class ActionModule(ApigeeAction):

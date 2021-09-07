@@ -27,13 +27,18 @@ parameters:
 
 steps:
   - bash: |
-      echo "Reporting status for commit $(COMMIT_SHA)"
+      export NOTIFY_GITHUB_REPOSITORY=$(NOTIFY_GITHUB_REPOSITORY)
 
-      if [[ "$(COMMIT_SHA)" =~ ^[0-9a-f]+$ ]]; then
-        echo "##[debug] Hitting https://api.github.com/repos/$(Build.Repository.Name)/statuses/$(COMMIT_SHA)"
-        curl --fail -q -X POST "https://api.github.com/repos/$(Build.Repository.Name)/statuses/$(COMMIT_SHA)" -d '{"state": "${{ parameters.state }}", "context": "$(Build.DefinitionName) ${{ parameters.environment }}", "description": "${{ parameters.description }}", "target_url": "https://dev.azure.com/NHSD-APIM/API%20Platform/_build/results?buildId=$(Build.BuildID)"}' --user $(GITHUB_USER):$(GITHUB_ACCESS_TOKEN)
+      if [[ -z ${NOTIFY_GITHUB_REPOSITORY} ]]; then
+         export NOTIFY_GITHUB_REPOSITORY=$(Build.Repository.Name)
+      fi
+
+      if [[ "$(NOTIFY_COMMIT_SHA)" =~ ^[0-9a-f]+$ ]]; then
+          echo "Reporting state ${{ parameters.state }} to ${NOTIFY_GITHUB_REPOSITORY}"
+          echo "##[debug] Hitting https://api.github.com/repos/${NOTIFY_GITHUB_REPOSITORY}/statuses/$(NOTIFY_COMMIT_SHA)"
+          curl --fail -q -X POST "https://api.github.com/repos/${NOTIFY_GITHUB_REPOSITORY}/statuses/$(NOTIFY_COMMIT_SHA)" -d '{"state": "${{ parameters.state }}", "context": "$(Build.DefinitionName) ${{ parameters.environment }}", "description": "${{ parameters.description }}", "target_url": "https://dev.azure.com/NHSD-APIM/API Platform/_build/results?buildId=$(Build.BuildID)"}' --user $(GITHUB_USER):$(GITHUB_ACCESS_TOKEN)
       else
-        echo "##[warning]$(COMMIT_SHA) doesn't look like a commit hash"
+        echo "##[warning]$(NOTIFY_COMMIT_SHA) doesn't look like a commit hash"
         echo "##[task.logissue type=warning]Task wasn't able to find the right commit sha value to notify github."
       fi
     displayName: "Notify GitHub: ${{ parameters.state }}"

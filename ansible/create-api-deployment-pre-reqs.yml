@@ -29,5 +29,4 @@
 
   roles:
     - setup-facts
-    - remove-api-deployment-user-access-key
     - create-api-deployment-pre-reqs

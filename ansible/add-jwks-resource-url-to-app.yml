@@ -1,0 +1,7 @@
+- name: add jwks_resource_url to app
+  hosts: 127.0.0.1
+  connection: local
+  gather_facts: no
+
+  roles:
+    - nhsd.apigee.add_jwks_resource_url_to_app

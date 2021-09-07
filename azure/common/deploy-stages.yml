@@ -1,12 +1,6 @@
 parameters:
   - name: apigee_deployments
     type: object
-  - name: secret_file_ids
-    type: object
-  - name: secret_ids
-    type: object
-  - name: config_ids
-    type: object
   - name: deploy_review_sandbox
     type: boolean
   - name: spec_file
@@ -17,6 +11,8 @@ parameters:
     type: boolean
   - name: deploy_template
   - name: prod_requires_approval
+  - name: manual_approval_env
+    type: string
 
 
 stages:

@@ -1,0 +1,4 @@
+APIGEE_ENVIRONMENT: "{{ lookup('env', 'APIGEE_ENVIRONMENT')}}"
+APIGEE_ORGANIZATION: "{{ APIGEE_ENVIRONMENT | nhsd.apigee.org_from_env }}"
+APIGEE_ACCESS_TOKEN: "{{ lookup('env', 'APIGEE_ACCESS_TOKEN')}}"
+APP_IDS: "{{ lookup('env', 'APP_ID').split(',') }}"

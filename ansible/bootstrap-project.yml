@@ -8,6 +8,7 @@
   vars:
     DEST: "{{ lookup('env', 'DEST') | realpath }}"
     CONFIG: "{{ lookup('env', 'CONFIG') | realpath }}"
+    GUID: "{{ lookup('env', 'GUID') }}"
 
   pre_tasks:
     - name: check DEST is set
@@ -19,6 +20,11 @@
       fail:
         msg: 'CONFIG is not set'
       when: not CONFIG
+
+    - name: check GUID is set
+      fail:
+        msg: 'GUID is not set'
+      when: not GUID
 
   roles:
     - bootstrap-project

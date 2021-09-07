@@ -1,4 +1,5 @@
 import json
+import time
 from ansible_collections.nhsd.apigee.plugins.module_utils.models.ansible.deploy_spec import (
     DeploySpec,
 )
@@ -50,11 +51,21 @@ class ActionModule(ApigeeAction):
             }
 
             if not check_mode:
-                response_dict = utils.post(
-                    constants.APIGEE_DAPI_URL + f"organizations/{args.organization}/specs/doc",
-                    args.access_token,
-                    json=spec_resource,
-                )
+                max_attempts = 3
+                for attempt in range(max_attempts):
+                    response_dict = utils.post(
+                        constants.APIGEE_DAPI_URL + f"organizations/{args.organization}/specs/doc",
+                        args.access_token,
+                        json=spec_resource,
+                        status_code=[200, 502],
+                    )
+                    if response_dict["response"]["status_code"] != 502:
+                        break
+                    # Yet another partially broken API...
+                    # Let's honour apigee's request to wait 30s before retry.
+                    sleep_time = 30 + attempt * 10
+                    print(f"Attempt {attempt+1}/{max_attempts}... received 502 from Apigee. Waiting {sleep_time}s to retry...")
+                    time.sleep(sleep_time)
                 if response_dict.get("failed"):
                     return response_dict
                 spec_resource = response_dict["response"]["body"]

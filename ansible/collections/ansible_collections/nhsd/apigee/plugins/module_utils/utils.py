@@ -1,4 +1,4 @@
-import json
+import json as JSON
 import ansible
 import deepdiff
 import requests
@@ -14,7 +14,7 @@ def exclude_keys(dict_, keys_to_ignore):
 def delta(before, after, keys_to_ignore=None):
     if not keys_to_ignore:
         keys_to_ignore = []
-    return json.loads(
+    return JSON.loads(
         deepdiff.DeepDiff(
             before,
             after,
@@ -25,8 +25,7 @@ def delta(before, after, keys_to_ignore=None):
     )
 
 
-def request(method, url, access_token, json=None, headers=None, status_code=None):
-
+def request(method, url, access_token, json=None, headers=None, status_code=None, session=None, params=None):
     if not status_code:
         status_code = [200]
 
@@ -35,7 +34,9 @@ def request(method, url, access_token, json=None, headers=None, status_code=None
 
     headers["authorization"] = f"Bearer {access_token}"
 
-    response = requests.request(method, url, json=json, headers=headers)
+    if session is None:
+        session = requests
+    response = session.request(method, url, json=json, headers=headers, params=params)
 
     response_dict = {
         "response": {"status_code": response.status_code, "reason": response.reason,},
@@ -51,8 +52,7 @@ def request(method, url, access_token, json=None, headers=None, status_code=None
     else:
         try:
             response_dict["response"]["body"] = response.json()
-
-        except json.decoder.JSONDecodeError:
+        except JSON.decoder.JSONDecodeError:
             response_dict["failed"] = True
             response_dict["response"]["body"] = content
 
@@ -79,13 +79,13 @@ def select_unique(
     key: str,
     value: str,
     valid_lengths: typing.Optional[typing.List[int]] = None,
-) -> typing.Optional[typing.Dict[str, typing.Any]]:
+) -> typing.List[typing.Dict[str, typing.Any]]:
 
     selected = [item for item in items if item.get(key) == value]
     if not valid_lengths:
         valid_lengths = [0, 1]
     if len(selected) not in valid_lengths:
-        raise ValueError(f"{json.dumps(selected)}")
+        raise ValueError(f"{JSON.dumps(selected)}")
     return selected
 
 

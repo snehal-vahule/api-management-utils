@@ -31,7 +31,5 @@
 
   roles:
     - setup-facts
-    - destroy-api-deployment-dns-entry
     - destroy-ecs-proxies
-    - remove-api-deployment-user-access-key
     - destroy-api-deployment-pre-reqs

@@ -53,8 +53,12 @@ parameters:
     default: false
   - name: enable_monitoring
     type: boolean
-  - name: enable_status_monitoring 
+  - name: enable_status_monitoring
     type: boolean
+  - name: hosted_target_connection_path_suffix
+    type: string
+  - name: hosted_target_healthcheck_suffix
+    type: string
   - name: _expose_blacklist
     type: object
     default:
@@ -107,6 +111,8 @@ stages:
                     echo instance-id: "${instance_id}"
                     echo connect to: https://eu-west-2.console.aws.amazon.com/systems-manager/session-manager/${instance_id}
                     echo sudo su - ubuntu
+                    or
+                    echo ssh ubuntu@${instance_id}
                     echo working directory: $(System.DefaultWorkingDirectory)
                   displayName: print aws info
 
@@ -146,9 +152,13 @@ stages:
 
                 - ${{ if parameters.notify }}:
                   - bash: |
-                      export COMMIT_SHA=`echo "$(Build.SourceVersionMessage)" | cut -d' ' -f2`
-                      echo "##vso[task.setvariable variable=COMMIT_SHA]$COMMIT_SHA"
-                    displayName: Set COMMIT_SHA
+                      if [[ -z $(NOTIFY_COMMIT_SHA) ]]; then
+                          export NOTIFY_COMMIT_SHA=`echo "$(Build.SourceVersionMessage)" | cut -d' ' -f2`
+                          echo "##vso[task.setvariable variable=NOTIFY_COMMIT_SHA]$NOTIFY_COMMIT_SHA"
+                      else
+                          echo "##[debug]Using already provided NOTIFY_COMMIT_SHA=$(NOTIFY_COMMIT_SHA)"
+                      fi
+                    displayName: Set NOTIFY_COMMIT_SHA
 
                   - template: '../components/update-github-status.yml'
                     parameters:
@@ -169,17 +179,62 @@ stages:
                     echo "##vso[task.setvariable variable=APIGEE_ENVIRONMENT]${{ parameters.environment }}"
                   displayName: Setting APIGEE_ENVIRONMENT=${{ parameters.environment }}
 
+                - bash: |
+                    set -euo pipefail
+                    if [[ ! -z $(UTILS_PR_NUMBER) ]]; then
+                      export PR_LABEL="utils-pr-$(UTILS_PR_NUMBER)"
+                      echo "##[debug]Triggered from utils repository, PR_LABEL=${PR_LABEL}"
+                      echo "##vso[task.setvariable variable=PR_LABEL]${PR_LABEL}"
+                    else
+                      echo "##[debug]PR_NUMBER=${{ parameters.pr_label }}"
+                      echo "##vso[task.setvariable variable=PR_LABEL]${{ parameters.pr_label }}"
+                    fi
+                  displayName: Override PR_LABEL
+
+                - bash: |
+                    set -euo pipefail
+                    if [[ ! -z $(UTILS_PR_NUMBER) ]]; then
+                      if [[ "${{ parameters.proxy_path }}" == "live" ]]; then
+                        export FULLY_QUALIFIED_SERVICE_NAME="${{ parameters.service_name }}-$(PR_LABEL)"
+                        echo "##vso[task.setvariable variable=FULLY_QUALIFIED_SERVICE_NAME]${FULLY_QUALIFIED_SERVICE_NAME}"
+                      else
+                        export FULLY_QUALIFIED_SERVICE_NAME="${{ parameters.service_name }}-$(PR_LABEL)-${{ parameters.proxy_path }}"
+                        echo "##vso[task.setvariable variable=FULLY_QUALIFIED_SERVICE_NAME]${FULLY_QUALIFIED_SERVICE_NAME}"
+                      fi
+                      echo "##[debug]Triggered from utils repository, FULLY_QUALIFIED_SERVICE_NAME=${FULLY_QUALIFIED_SERVICE_NAME}"
+                    else
+                      echo "##[debug]FULLY_QUALIFIED_SERVICE_NAME=${{ parameters.fully_qualified_service_name }}"
+                      echo "##vso[task.setvariable variable=FULLY_QUALIFIED_SERVICE_NAME]${{ parameters.fully_qualified_service_name }}"
+                    fi
+                  displayName: Override FULLY_QUALIFIED_SERVICE_NAME
+
+                - bash: |
+                    set -euo pipefail
+                    if [[ ! -z $(UTILS_PR_NUMBER) ]]; then
+                      export SERVICE_BASE_PATH="${{ parameters.service_base_path }}"
+                      export SERVICE_BASE_PATH=${SERVICE_BASE_PATH/-pr-*/}-$(PR_LABEL)
+                      echo "##vso[task.setvariable variable=SERVICE_BASE_PATH]${SERVICE_BASE_PATH}"
+                      echo "##[debug]Triggered from utils repository, SERVICE_BASE_PATH=${SERVICE_BASE_PATH}"
+                    else
+                      echo "##[debug]SERVICE_BASE_PATH=${{ parameters.service_base_path }}"
+                      echo "##vso[task.setvariable variable=SERVICE_BASE_PATH]${{ parameters.service_base_path }}"
+                    fi
+                  displayName: Override SERVICE_BASE_PATH
+
                 - template: '../templates/deploy-service.yml'
                   parameters:
                     service_name: ${{ parameters.service_name }}
                     short_service_name: ${{ parameters.short_service_name }}
-                    fully_qualified_service_name: ${{ parameters.fully_qualified_service_name }}
-                    service_base_path: ${{ parameters.service_base_path }}
+                    fully_qualified_service_name: $(FULLY_QUALIFIED_SERVICE_NAME)
+                    service_base_path: $(SERVICE_BASE_PATH)
+                    stage_name: ${{ parameters.stage_name }}
                     jinja_templates: ${{ parameters.jinja_templates }}
                     apigee_environment: ${{ parameters.environment }}
                     apigee_organization: ${{ parameters.apigee_organization }}
                     product_display_name: ${{ parameters.product_display_name }}
                     product_description: ${{ parameters.product_description }}
+                    hosted_target_connection_path_suffix: ${{ parameters.hosted_target_connection_path_suffix }}
+                    hosted_target_healthcheck_suffix: ${{ parameters.hosted_target_healthcheck_suffix }}
                     proxy_path: ${{ parameters.proxy_path }}
                     pre_template: ${{ parameters.pre_template }}
                     post_template: ${{ parameters.post_template }}
@@ -192,9 +247,8 @@ stages:
                     make_spec_visible: ${{ parameters.make_spec_visible }}
                     friendly_api_name: ${{ parameters.friendly_api_name }}
                     spec_file: ${{ parameters.spec_file }}
-                    pr_label: ${{ parameters.pr_label }}
+                    pr_label: $(PR_LABEL)
                     aws_account: ${{ parameters.aws_account }}
-
 
                 - ${{ if parameters.notify }}:
                   - template: '../components/update-github-status.yml'

@@ -9,9 +9,7 @@ steps:
       versionSpec: '3.8'
 
   - bash: |
-      brew install tfenv
-      tfenv install 0.12.29
-      tfenv use 0.12.29
+      tfenv use 0.14.6
     displayName: setup terraform
 
   - bash: |

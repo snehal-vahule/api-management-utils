@@ -1,3 +1,0 @@
-deploy_user_name: "deploy-{{ APIGEE_ENVIRONMENT }}-{{ service_id }}"
-deploy_user_secret: "{{ account }}/api-deploy-users/{{ deploy_user_name }}/aws_config"
-

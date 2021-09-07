@@ -16,12 +16,6 @@
   set_fact:
     manifest: "{{ lookup('template', manifest_template) | from_yaml_all | list | last }}"
 
-- name: validate templated manifest
-  nhsd.apigee.validate_manifest:
-    manifest: "{{ manifest }}"
-    service_name: "{{ SERVICE_NAME }}"
-    dist_dir: "{{ DIST_DIR }}"
-
 - name: write template to file
   copy:
     content: "{{ manifest | to_nice_yaml(indent=2) }}"

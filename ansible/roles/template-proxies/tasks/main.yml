@@ -8,6 +8,23 @@
     msg: "{{ PROXIES_DIR }} does not exist"
   when: not st.stat.exists
 
+- name: get_ptl_account_id
+  command: >
+    aws --region eu-west-2 ssm get-parameter --name /account-ids/ptl --query Parameter.Value --output text
+  register: get_ptl_account_id
+  changed_when: no
+
+- name: get_prod_account_id
+  command: >
+    aws --region eu-west-2 ssm get-parameter --name /account-ids/prod --query Parameter.Value --output text
+  register: get_prod_account_id
+  changed_when: no
+  
+- name: set account ids
+  set_fact:
+    PTL_ACCOUNT_ID: "{{ get_ptl_account_id.stdout }}"
+    PROD_ACCOUNT_ID: "{{ get_prod_account_id.stdout }}"
+
 - name: create temporary directory
   tempfile:
     state: directory

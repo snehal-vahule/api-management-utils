@@ -25,7 +25,7 @@ class ActionModule(ApigeeAction):
         # as APIGEE_SPEC_RESOURCES will not exist!
         if apidoc.specId:
             try:
-                specs = utils.select_unique(task_vars["APIGEE_SPEC_RESOURCES"], "name", apidoc.specId, valid_lengths = [1])
+                specs = utils.select_unique(task_vars["APIGEE_SPEC_RESOURCES"], "name", apidoc.specId, valid_lengths=[1])
             except ValueError as e:
                 return {
                     "failed": True,
@@ -167,5 +167,12 @@ class ActionModule(ApigeeAction):
             result["diff"][0]["after"] = utils.exclude_keys(
                 result["apidoc"], keys_to_ignore
             )
+
+        # Once spec apidoc deployed, update the snapshot
+        apidoc_id = result["apidoc"]["id"]
+        url = constants.portal_uri(args.organization) + f"/{apidoc_id}/snapshot"
+        apidoc_snapshot_request = utils.put(url, args.access_token)
+        if apidoc_snapshot_request.get("failed"):
+            return apidoc_snapshot_request
 
         return result

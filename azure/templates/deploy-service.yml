@@ -3,12 +3,15 @@ parameters:
   - name: product_display_name
   - name: product_description
   - name: service_name
+  - name: stage_name
   - name: short_service_name
   - name: fully_qualified_service_name
   - name: apigee_environment
   - name: apigee_organization
   - name: service_base_path
   - name: pr_label
+  - name: hosted_target_connection_path_suffix
+  - name: hosted_target_healthcheck_suffix
   - name: aws_account
     values:
       - ptl
@@ -17,7 +20,7 @@ parameters:
     type: object
   - name: enable_monitoring
     type: boolean
-  - name: enable_status_monitoring 
+  - name: enable_status_monitoring
     type: boolean
   - name: ping
     type: boolean
@@ -42,11 +45,19 @@ steps:
       ls -R
       if [[ -f ecs-deploy-${{ parameters.apigee_environment }}.yml ]] || [[ -f ecs-proxies-deploy.yml ]] || [[ -f ecs-proxies-deploy-sandbox.yml ]]; then
         echo "##vso[task.setvariable variable=deploy_containers]true"
-      else 
+      else
         echo "##vso[task.setvariable variable=deploy_containers]false"
       fi
     workingDirectory: "$(SERVICE_DIR)"
     displayName: "Check for ECS proxy definitions"
+
+  - task: s3-cache-action@1
+    inputs:
+      key: poetry | utils | $(UTILS_DIR)/poetry.lock
+      location: "$(UTILS_DIR)/.venv"
+      debug: true
+      alias: 'UtilsPreReq'
+    displayName: cache utils pre-requisites
 
   - bash: |
       n=0
@@ -56,10 +67,11 @@ steps:
         n=$((n+1))
       done
     workingDirectory: "$(UTILS_DIR)"
+    condition: ne(variables['CacheRestored-UtilsPreReq'], 'true')
     displayName: "Install utils pre-requisites"
 
   - bash: |
-      tfenv use 0.12.29
+      tfenv use 0.14.6
     displayName: setup terraform
     condition: and(succeeded(), eq(variables['deploy_containers'], 'true'))
 
@@ -69,6 +81,14 @@ steps:
 
   - ${{ each pre_template_step in parameters.pre_template }}:
     - ${{ pre_template_step }}
+
+  # pre_template steps might have been doing cross account stuff
+  # make sure we bring everything back to the correct AWS role here
+  - template: ../components/aws-assume-role.yml
+    parameters:
+      role: "auto-ops"
+      profile: "apm_${{ parameters.aws_account }}"
+      aws_account: "${{ parameters.aws_account }}"
 
   - ${{ if parameters.jinja_templates }}:
       - bash: mkdir -p group_vars/all && touch jinja_templates.yml
@@ -87,6 +107,8 @@ steps:
       export PROXIES_DIR="$(SERVICE_DIR)/proxies"
       export SERVICE_BASE_PATH="${{ parameters.service_base_path }}"
       export APIGEE_ENVIRONMENT="${{ parameters.apigee_environment }}"
+      export HOSTED_TARGET_CONNECTION_PATH_SUFFIX="${{ parameters.hosted_target_connection_path_suffix }}"
+      export HOSTED_TARGET_HEALTHCHECK_SUFFIX="${{ parameters.hosted_target_healthcheck_suffix }}"
       export SOURCE_COMMIT_ID=$(Build.SourceVersion)
       export RELEASE_RELEASEID=$(Build.BuildId)
 
@@ -101,11 +123,13 @@ steps:
       fi
 
       cd $(UTILS_DIR)
+      ANSIBLE_FORCE_COLOR=yes \
       make --no-print-directory -C ansible template-proxies
 
       if [ -f $(SERVICE_DIR)/manifest.yml ]; then
           DIST_DIR=$(SERVICE_DIR) \
           PROXY_DIR=${{ parameters.proxy_path }} \
+          ANSIBLE_FORCE_COLOR=yes \
           make --no-print-directory -C ansible add-apim-guids-policy
       fi
 
@@ -134,11 +158,6 @@ steps:
       if [[ ! -z "${proxy_vars_file}" ]]; then
         source $(SERVICE_DIR)/.build_env_vars
         deploy_role="deploy-${{ parameters.apigee_environment }}-${service_id}"
-
-        # temp this is till we can update to terraform 0.13.0 (which respects the profile setting over metadata)
-        export AWS_ACCESS_KEY_ID="$(grep 'aws_access_key_id = ' ~/.aws/config | cut -d ' ' -f3)"
-        export AWS_SECRET_ACCESS_KEY="$(grep 'aws_secret_access_key = ' ~/.aws/config | cut -d ' ' -f3)"
-        export AWS_SESSION_TOKEN="$(grep 'aws_session_token = ' ~/.aws/config | cut -d ' ' -f3)"
 
         account=${{ parameters.aws_account }} \
         SERVICE_BASE_PATH=${{ parameters.service_base_path }} \
@@ -170,11 +189,6 @@ steps:
       else
         export DEPLOYED_VERSION="${{ parameters.fully_qualified_service_name }}"
       fi
-
-      # temp this is till we can update to terraform 0.13.0 (which respects the profile setting over metadata)
-      export AWS_ACCESS_KEY_ID="$(grep 'aws_access_key_id = ' ~/.aws/config | cut -d ' ' -f3)"
-      export AWS_SECRET_ACCESS_KEY="$(grep 'aws_secret_access_key = ' ~/.aws/config | cut -d ' ' -f3)"
-      export AWS_SESSION_TOKEN="$(grep 'aws_session_token = ' ~/.aws/config | cut -d ' ' -f3)"
 
       account=${{ parameters.aws_account }} \
       PROXY_VARS_FILE="${proxy_vars_file}" \
@@ -246,29 +260,118 @@ steps:
       fi
     displayName: 'Deploy Proxy, Product and Spec'
 
-  - ${{ if parameters.enable_monitoring }}:
-      - template: '../components/curl.yml'
-        parameters:
-          display_name: Add monitoring endpoints
-          url: "https://internal-dev.api.service.nhs.uk/monitoring-sd/service"
-          method: POST
-          headers: "apikey: $(MONITORING_API_KEY)"
-          ${{ if eq(parameters.apigee_environment, 'prod') }}:
-            body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
-          ${{ if not(eq(parameters.apigee_environment, 'prod')) }}:
-            body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
+  - bash: |
+      set -euo pipefail
 
-  - ${{ if parameters.enable_status_monitoring  }}:
-     - template: '../components/curl.yml'
-       parameters:
-        display_name: Add status endpoint
-        url: "https://internal-dev.api.service.nhs.uk/monitoring-sd/service"
-        method: POST
-        headers: "apikey: $(MONITORING_API_KEY)"
-        ${{ if eq(parameters.apigee_environment, 'prod') }}:
-          body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping", "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx_with_api_key https://api.service.nhs.uk/${{ parameters.service_base_path }}/_status"  ] } }'
-        ${{ if not(eq(parameters.apigee_environment, 'prod')) }}:
-          body: '{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping", "${{ parameters.service_name }}@${{ parameters.apigee_environment }}=http_2xx_with_api_key https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_status"  ] } }'
+      echo "Setting stage name as snake case for monitoring"
+      export MONITORING_STAGE_NAME="${{ replace(parameters.stage_name, '_', '-') }}"
+      echo "MONITORING_STAGE_NAME=${MONITORING_STAGE_NAME}"
+      echo "##vso[task.setvariable variable=MONITORING_STAGE_NAME]$MONITORING_STAGE_NAME"
+
+      if [[ "${{ parameters.apigee_environment }}" == "prod" ]]; then
+        export url="https://api.service.nhs.uk/monitoring-sd/service"
+        export status_body='{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx_with_api_key https://api.service.nhs.uk/${{ parameters.service_base_path }}/_status" ] } }'
+        export ping_body='{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
+      else
+        export url="https://internal-dev.api.service.nhs.uk/monitoring-sd/service"
+        export status_body='{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx_with_api_key https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_status" ] } }'
+        export ping_body='{ "${{ parameters.service_name }}": { "${{ parameters.apigee_environment }}": [ "${{ parameters.service_name }}@$(MONITORING_STAGE_NAME)=http_2xx https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping" ] } }'
+      fi
+
+      echo "##vso[task.setvariable variable=is_pull_request]false"
+      echo "##vso[task.setvariable variable=check_and_enable_ping]${{ parameters.enable_monitoring }}"
+      echo "##vso[task.setvariable variable=check_and_enable_status]${{ parameters.enable_status_monitoring }}"
+
+      if [[ "${{ parameters.service_base_path }}" == *"-pr-"* ]]; then
+        echo "##vso[task.setvariable variable=check_and_enable_ping]false"
+        echo "##vso[task.setvariable variable=check_and_enable_status]false"
+        echo "##vso[task.setvariable variable=is_pull_request]true"
+      fi
+
+      echo "##vso[task.setvariable variable=url]$url"
+      echo "##vso[task.setvariable variable=status_body]$status_body"
+      echo "##vso[task.setvariable variable=ping_body]$ping_body"
+    displayName: 'Set monitoring variables'
+
+  - bash: |
+      set -euo pipefail
+    
+      if [[ "${{ parameters.apigee_environment }}" == "prod" ]]; then
+        export ping_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(status-endpoint-api-key)" https://api.service.nhs.uk/${{ parameters.service_base_path }}/_ping`
+      else
+        export ping_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(status-endpoint-api-key)" https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_ping`
+      fi
+
+      echo _ping_response=$ping_endpoint_response
+      echo "##vso[task.setvariable variable=ping_endpoint_response]$ping_endpoint_response"
+
+      if [[ $ping_endpoint_response == "404" ]]; then
+        echo "##vso[task.logissue type=error]Your proxy doesn't have a _ping endpoint therefore we can't monitor this proxy and it should not be released, use the flag 'enable_monitoring=false' if your API doesn't support _ping healthcheck."
+        exit 1       
+      fi
+    
+      if [[ $ping_endpoint_response != "200" ]]; then
+        echo "##vso[task.logissue type=error]Your proxy's _ping endpoint has encounted an error and should not be released until it is resolved."
+        exit 1       
+      fi
+    displayName: 'Check _ping'
+    condition: and(succeeded(), eq(variables['check_and_enable_ping'], 'true'))
+ 
+  - bash: |
+      set -euo pipefail
+      
+      if [[ "${{ parameters.apigee_environment }}" == "prod" ]]; then
+        export status_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(status-endpoint-api-key)" https://api.service.nhs.uk/${{ parameters.service_base_path }}/_status`
+      else
+        export status_endpoint_response=`curl -s -o /dev/null -w '%{http_code}' -H "apikey: $(status-endpoint-api-key)" https://${{ parameters.apigee_environment }}.api.service.nhs.uk/${{ parameters.service_base_path }}/_status`
+      fi
+
+      echo _status_response=$status_endpoint_response
+      echo "##vso[task.setvariable variable=status_endpoint_response]$status_endpoint_response"
+
+      if [[ $status_endpoint_response == "404" ]]; then
+        echo "##vso[task.logissue type=error]Your proxy doesn't have a _status endpoint therefore we can't monitor this proxy and it should not be released, use the flag 'enable_status_monitoring=false' if your API doesn't support _status healthcheck."
+        exit 1            
+      fi
+      
+      if [[ $status_endpoint_response != "200" ]]; then
+        echo "##vso[task.logissue type=error]Your proxy's _status endpoint has encounted an error and should not be released until it is resolved."
+        exit 1            
+      fi
+    displayName: 'Check _status'
+    condition: and(succeeded(), eq(variables['check_and_enable_status'], 'true'))
+
+  - bash: |
+      set -euo pipefail
+
+      curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(status_body)' $(url)
+    displayName: Enable _status monitoring
+    condition: and(succeeded(), eq(variables['check_and_enable_status'], 'true'))
+
+  - bash: |
+      set -euo pipefail
+
+      curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d '$(status_body)' $(url)
+      echo
+      echo "_status endpoint monitoring is disabled"
+    displayName: Disable _status monitoring
+    condition: and(succeeded(), eq(variables['check_and_enable_status'], 'false'), eq(variables['is_pull_request'], 'false'))
+
+  - bash: |
+      set -euo pipefail
+
+      curl --fail -X 'POST' -H 'apikey: $(MONITORING_API_KEY)' -d '$(ping_body)' $(url)
+    displayName: Enable _ping monitoring
+    condition: and(succeeded(), eq(variables['check_and_enable_ping'], 'true'))
+
+  - bash: |
+      set -euo pipefail
+
+      curl --fail -X 'DELETE' -H 'apikey: $(MONITORING_API_KEY)' -d '$(ping_body)' $(url)
+      echo
+      echo "_ping endpoint monitoring is disabled"
+    displayName: Disable _ping monitoring
+    condition: and(succeeded(), eq(variables['check_and_enable_ping'], 'false'), eq(variables['is_pull_request'], 'false'))
 
   - ${{ each post_deploy_step in parameters.post_deploy }}:
     - ${{ post_deploy_step }}

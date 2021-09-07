@@ -30,5 +30,4 @@
 
   roles:
     - setup-facts
-    - destroy-api-deployment-dns-entry
     - destroy-ecs-proxies

@@ -17,6 +17,7 @@
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     return_content: yes
+    timeout: 90
   register: get_apps
 
 - name: create product map

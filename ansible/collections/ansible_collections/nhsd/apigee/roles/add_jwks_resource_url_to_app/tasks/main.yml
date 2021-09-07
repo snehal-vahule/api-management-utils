@@ -1,0 +1,9 @@
+- name: add jwks-resource-url to app
+  nhsd.apigee.add_jwks_resource_url_to_app:
+    app_id: "{{ APP_ID }}"
+    access_token: "{{ APIGEE_ACCESS_TOKEN }}"
+    organization: "{{ APIGEE_ORGANIZATION }}"
+    environment: "{{ APIGEE_ENVIRONMENT }}"
+  loop: "{{ APP_IDS }}"
+  loop_control:
+    loop_var: APP_ID

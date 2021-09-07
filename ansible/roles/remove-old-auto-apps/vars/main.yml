@@ -1,0 +1,5 @@
+org_uri: "https://api.enterprise.apigee.com/v1/organizations/{{ APIGEE_ORGANIZATION }}"
+developers_uri: "{{ org_uri }}/developers"
+apps_uri: "{{ org_uri }}/apps"
+retain_hours:  "{{ (lookup('env', 'retain_hours') or 72) }}"
+min_timestamp: "{{ ((ansible_date_time.epoch | int) - ((retain_hours | int) * 3600)) * 1000 }}"

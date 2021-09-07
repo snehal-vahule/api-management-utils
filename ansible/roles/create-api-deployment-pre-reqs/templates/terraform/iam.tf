@@ -25,6 +25,29 @@ data "aws_iam_policy_document" "ecs-execution-role" {
   }
 
   statement {
+    actions = [
+      "secretsmanager:GetSecretValue"
+    ]
+
+    resources = [
+      "arn:aws:secretsmanager:${local.region}:${local.account_id}:secret:${var.account}/*"
+    ]
+
+    condition {
+      test = "ForAnyValue:StringLike"
+      values = [
+        "${var.service_id}",
+        "${var.service_id} *",
+        "* ${var.service_id} *",
+        "* ${var.service_id}",
+        "all"
+      ]
+      variable = "secretsmanager:ResourceTag/AllowedServices1"
+    }
+
+  }
+
+  statement {
 
     actions = [
       "ecr:GetAuthorizationToken"
@@ -66,6 +89,8 @@ resource "aws_iam_role" "ecs-execution-role" {
   tags = {
     Name   = "ecs-x-${local.env_service_id}"
     source = "terraform"
+    api-service = var.service_id
+    api-environment = var.apigee_environment
   }
 }
 
@@ -108,6 +133,12 @@ data "aws_iam_policy_document" "deploy-user-assume-role" {
 resource "aws_iam_role" "deploy-user" {
   name = "deploy-${local.env_service_id}"
   assume_role_policy = data.aws_iam_policy_document.deploy-user-assume-role.json
+
+  tags = {
+    source = "terraform"
+    api-service = var.service_id
+    api-environment = var.apigee_environment
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "deploy-user" {
@@ -202,8 +233,7 @@ data "aws_iam_policy_document" "deploy-user" {
 
     condition {
       test = "StringEquals"
-      values = [
-      var.service_id]
+      values = [var.service_id]
       variable = "aws:RequestTag/api-service"
     }
 

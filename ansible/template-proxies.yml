@@ -26,7 +26,16 @@
           <LoadBalancer>
             <Server name="hosted-apis"/>
           </LoadBalancer>
-          <Path>/{{ service_id }}{{ '-' + pr_number if pr_number else '' }}</Path>
+          <Path>/{{ service_id }}{{ '-' + pr_number if pr_number else '' }}{{ HOSTED_TARGET_CONNECTION_PATH_SUFFIX | default('') }}</Path>
+    HOSTED_TARGET_HEALTHCHECK: |
+      <SSLInfo>
+        <Enabled>true</Enabled>
+      </SSLInfo>
+      <LoadBalancer>
+        <Server name="hosted-apis"/>
+      </LoadBalancer>
+      <Path>/{{ service_id }}{{ '-' + pr_number if pr_number else '' }}{{ HOSTED_TARGET_HEALTHCHECK_SUFFIX | default('/_status') }}</Path>
+   
 
   roles:
     - template-proxies

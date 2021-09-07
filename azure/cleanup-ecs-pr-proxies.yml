@@ -17,23 +17,38 @@ jobs:
     timeoutInMinutes: 240
     pool:
       name: 'AWS-ECS'
+
+    workspace:
+      clean: all
+
     steps:
+
       - checkout: self
 
-      -  template: ./components/aws-assume-role.yml
-         parameters:
-           role: "auto-ops"
-           profile: "apm_ptl"
+      - bash: |
+          instance_id="$(curl -s http://169.254.169.254/latest/meta-data/instance-id)"
+          echo instance-id: "${instance_id}"
+          echo connect to: https://eu-west-2.console.aws.amazon.com/systems-manager/session-manager/${instance_id}
+          echo sudo su - ubuntu
+          or
+          echo ssh ubuntu@${instance_id}
+          echo working directory: $(System.DefaultWorkingDirectory)
+        displayName: print aws info
 
-      - template: build-prereqs.yml
+      - template: ./components/aws-assume-role.yml
         parameters:
-          utils_dir: './'
+          role: "auto-ops"
+          profile: "apm_ptl"
 
       - bash: |
-          # temp this is till we can update to terraform 0.13.0 (which respects the profile setting over metadata)
-          export AWS_ACCESS_KEY_ID="$(grep 'aws_access_key_id = ' ~/.aws/config | cut -d ' ' -f3)"
-          export AWS_SECRET_ACCESS_KEY="$(grep 'aws_secret_access_key = ' ~/.aws/config | cut -d ' ' -f3)"
-          export AWS_SESSION_TOKEN="$(grep 'aws_session_token = ' ~/.aws/config | cut -d ' ' -f3)"
+          tfenv use 0.14.6
+        displayName: setup terraform
+
+      - bash: |
+          make install
+        displayName: install dependencies
+
+      - bash: |
           export retain_hours=72
           ANSIBLE_FORCE_COLOR=yes make -C ansible remove-old-ecs-pr-deploys
         displayName: "cleanup older pr deploys"

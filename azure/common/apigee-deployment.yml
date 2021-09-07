@@ -44,6 +44,12 @@ parameters:
     displayName: Toggle ping endpoint avaliablility
     type: boolean
     default: true
+  - name: hosted_target_connection_path_suffix
+    type: string
+    default: ''
+  - name: hosted_target_healthcheck_suffix
+    type: string
+    default: ''
   - name: jinja_templates
     type: object
     displayName:  Key/values for custom jinja templating
@@ -51,11 +57,11 @@ parameters:
   - name: enable_monitoring
     type: boolean
     displayName: Whether monitoring is needed
-    default: false
-  - name: enable_status_monitoring 
+    default: true
+  - name: enable_status_monitoring
     type: boolean
     displayName: Temporary flag for adding a _status endpoint to service discovery
-    default: false
+    default: true
   - name: secret_file_ids
     displayName: List of additional AWS Secrets Manager multiline Secret IDs
     type: object
@@ -88,6 +94,10 @@ parameters:
     displayName: Requires manual approval
     type: boolean
     default: true
+  - name: manual_approval_env
+    displayName: Custom manual approval env overwrite
+    type: string
+    default: 'manual-approval'
   - name: _scoped_pipeline_vars
     type: object
     displayName: All the pipeline parameters which support per-environment scoping.
@@ -95,18 +105,23 @@ parameters:
       - service_name
       - short_service_name
       - service_base_path
+      - hosted_target_connection_path_suffix
+      - hosted_target_healthcheck_suffix
       - product_display_name
       - product_description
       - fully_qualified_service_name
       - jinja_templates
       - proxy_path
       - enable_monitoring
-      - enable_status_monitoring 
+      - enable_status_monitoring
       - pre_template
       - post_template
       - pre_deploy
       - post_deploy
       - make_spec_visible
+      - secret_file_ids
+      - secret_ids
+      - config_ids
   - name: _scoped_step_list_vars
     type: object
     displayName: Subset of scoped pipeline variables that are of type stepList
@@ -155,6 +170,7 @@ extends:
                 - environment: manual-approval
                   stage_name: manual_approval
                   depends_on: []
+                  manual_approval_prod: true
                   ${{ each var in parameters._scoped_pipeline_vars }}:
                       ${{ var }}: ${{ parameters[var] }}
             - ${{ each apigee_deployment in parameters.apigee_deployments }}:

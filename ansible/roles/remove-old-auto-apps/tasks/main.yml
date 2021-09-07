@@ -1,0 +1,25 @@
+
+- name: "get apps"
+  uri:
+    url: "{{ apps_uri }}?expand=true"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    return_content: yes
+    timeout: 120
+  register: get_apps
+
+- name: filter apps
+  set_fact:
+    auto_apps: "{{ get_apps.json.app | selectattr('name', 'match', '^apim-auto-.*')  | selectattr('createdAt', 'le', (min_timestamp|int)) }}"
+
+- name: remove app
+  uri:
+    url: "{{ developers_uri }}/{{ app.developerId }}/apps/{{ app.name | urlencode }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    method: DELETE
+  changed_when: yes
+  loop: "{{ auto_apps }}"
+  loop_control:
+    loop_var: app
+    label: "{{ app.name }}"

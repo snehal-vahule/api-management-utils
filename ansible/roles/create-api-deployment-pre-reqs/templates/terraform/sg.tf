@@ -8,5 +8,7 @@ resource "aws_security_group" "api-deployment" {
   tags = {
     Name   = "api-${local.env_service_id}"
     source = "terraform"
+    api-service = var.service_id
+    api-environment = var.apigee_environment
   }
 }

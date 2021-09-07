@@ -1,0 +1,74 @@
+
+- name: "get developers"
+  uri:
+    url: "{{ developers_uri }}?expand=true"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    return_content: yes
+  register: get_developers
+
+- name: "map developers"
+  set_fact:
+    dev_id_to_email: "{{ get_developers.json.developer | dict_list_to_map('developerId', 'email') }}"
+
+- name: get products
+  uri:
+    url: "{{ products_uri }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    return_content: yes
+  register: products
+
+- name: list portals
+  uri:
+    url: "{{ portals_base_uri }}?orgname={{ APIGEE_ORGANIZATION }}"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    return_content: yes
+  register: portals
+
+- name: set portal_id
+  set_fact:
+    portal_id: "{{ portals.json.data[0].id }}"
+
+- name: get audience
+  uri:
+    url: "https://apigee.com/portals/api/sites/{{ portal_id }}/audiencesenabled"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    return_content: yes
+  register: get_audiences
+
+- name: set audience_id
+  set_fact:
+    audience_id: "{{ get_audiences.json.data.zmsId }}"
+
+- name: get teams
+  uri:
+    url: "https://apigee.com/consumers/api/providers/{{ audience_id }}/teams"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    return_content: yes
+  register: get_teams
+
+- name: setup developer teams map
+  set_fact:
+    teams_map: "{{ get_teams.json.data | apigee_teams_map }}"
+
+- name: "get apps"
+  uri:
+    url: "{{ apps_uri }}?expand=true"
+    headers:
+      Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
+    return_content: yes
+  register: get_apps
+
+- name: create product map
+  set_fact:
+    product_app_map: "{{ get_apps.json.app | apigee_apps_to_product_map(product_filter=product_filter) }}"
+
+- name: get product developers
+  set_fact:
+    product_developers: "{{ product_app_map | apigee_product_developers(dev_id_to_email=dev_id_to_email, teams_map=teams_map) }}"
+
+- debug: var=product_developers
