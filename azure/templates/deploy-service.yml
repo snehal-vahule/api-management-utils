@@ -82,6 +82,14 @@ steps:
   - ${{ each pre_template_step in parameters.pre_template }}:
     - ${{ pre_template_step }}
 
+  # pre_template steps might have been doing cross account stuff
+  # make sure we bring everything back to the correct AWS role here
+  - template: ../components/aws-assume-role.yml
+    parameters:
+      role: "auto-ops"
+      profile: "apm_${{ parameters.aws_account }}"
+      aws_account: "${{ parameters.aws_account }}"
+
   - ${{ if parameters.jinja_templates }}:
       - bash: mkdir -p group_vars/all && touch jinja_templates.yml
         workingDirectory: "$(UTILS_DIR)/ansible/"
