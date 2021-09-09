@@ -56,9 +56,7 @@
   # manifest manages proxies too.
   when: > 
     item.name | regex_search('^' + SERVICE_NAME + '-' + PULL_REQUEST | default(APIGEE_ENVIRONMENT)) or
-    item.name | regex_search('^' + SERVICE_NAME + '-alpha-' + PULL_REQUEST | default(APIGEE_ENVIRONMENT)) or
-    item.name | regex_search('^' + SERVICE_NAME + '-fix-' + PULL_REQUEST | default(APIGEE_ENVIRONMENT)) or
-    item.name | regex_search('^' + SERVICE_NAME + '-rc-' + PULL_REQUEST | default(APIGEE_ENVIRONMENT))
+    item.name | regex_search('^' + SERVICE_NAME + '-' + PULL_REQUEST + '-alpha'| default(APIGEE_ENVIRONMENT))
 
 - name: deploy apigee specs
   nhsd.apigee.deploy_spec:
