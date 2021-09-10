@@ -13,6 +13,8 @@ parameters:
   - name: aws_account
     type: string
     default: 'ptl'
+  - name: apigee_organization
+    type: string
 
 steps:
   - bash: |
@@ -57,3 +59,4 @@ steps:
     parameters:
       apigee_username: $(APIGEE_USERNAME)
       apigee_password: $(APIGEE_PASSWORD)
+      apigee_organization: ${{ parameters.apigee_organization }}
