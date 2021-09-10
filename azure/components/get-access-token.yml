@@ -15,6 +15,13 @@ parameters:
 steps:
   - bash: |
       set -euo pipefail
+      echo 'apigee_username: ${{ parameters.apigee_username }}'
+      echo 'apigee_organization: ${{ parameters.apigee_organization }}'
+      echo 'auth_url: ${{ parameters._auth_server[parameters.apigee_organization] }}'
+    displayName: 'Print access token debug info'
+
+  - bash: |
+      set -euo pipefail
       curl -X POST https://${{ parameters._auth_server[parameters.apigee_organization] }}/oauth/token \
         -H "Content-Type: application/x-www-form-urlencoded" \
         -H "Accept: application/json;charset=utf-8" \
