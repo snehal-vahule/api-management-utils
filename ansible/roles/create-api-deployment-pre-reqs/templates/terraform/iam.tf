@@ -252,7 +252,6 @@ data "aws_iam_policy_document" "deploy-user" {
 
     resources = concat(
       [local.ecs_cluster.arn],
-      [for ns in local.short_env_service_namespaces : "arn:aws:elasticloadbalancing:${local.region}:${local.account_id}:targetgroup/${ns}/*"],
       [for ns in local.service_namespaces : "arn:aws:ecs:${local.region}:${local.account_id}:service/apis-${var.apigee_environment}/${ns}"]
     )
   }
