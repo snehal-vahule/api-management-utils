@@ -9,8 +9,8 @@ parameters:
   - name: _auth_server
     type: object
     default:
-      nhsd-nonprod: login.apigee.com
-      nhsd-prod: nhs-digital-prod.login.apigee.com
+      nonprod: login.apigee.com
+      prod: nhs-digital-prod.login.apigee.com
     
 steps:
   - bash: |
