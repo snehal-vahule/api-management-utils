@@ -5,6 +5,7 @@ parameters:
     type: string
   - name: apigee_organization
     type: string
+    default: nhsd-nonprod
   - name: _auth_server
     type: object
     default:
