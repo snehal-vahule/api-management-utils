@@ -77,6 +77,8 @@ resource "aws_ecs_service" "service" {
     ]
   }
 
+  tags = local.common_tags
+
 }
 
 resource "aws_appautoscaling_target" "ecs_target" {
@@ -107,5 +109,4 @@ resource "aws_appautoscaling_policy" "ecs_policy" {
     scale_in_cooldown = var.autoscaling_scale_in_cooldown
     target_value = var.autoscaling_target_value
   }
-
 }

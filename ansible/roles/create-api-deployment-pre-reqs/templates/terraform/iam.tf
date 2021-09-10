@@ -220,7 +220,6 @@ data "aws_iam_policy_document" "deploy-user" {
     )
   }
 
-
   statement {
 
     actions = [
@@ -239,11 +238,22 @@ data "aws_iam_policy_document" "deploy-user" {
 
     condition {
       test = "StringEquals"
-      values = [
-      var.apigee_environment]
+      values = [var.apigee_environment]
       variable = "aws:RequestTag/api-environment"
     }
 
+  }
+
+  statement {
+    actions = [
+      "ecs:TagResource",
+      "ecs:UntagResource"
+    ]
+
+    resources = concat(
+      [local.ecs_cluster.arn],
+      [for ns in local.service_namespaces : "arn:aws:ecs:${local.region}:${local.account_id}:service/apis-${var.apigee_environment}/${ns}"]
+    )
   }
 
   statement {

@@ -149,6 +149,7 @@ stages:
                       - ${{ each config_id in parameters.config_ids }}:
                           - ${{ config_id }}
                     aws_account: ${{ parameters.aws_account }}
+                    apigee_organization: ${{ parameters.apigee_organization }}
 
                 - ${{ if parameters.notify }}:
                   - bash: |
