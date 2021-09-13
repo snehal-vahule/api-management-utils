@@ -1,7 +1,7 @@
 
 - name: "get product {{ product_slug }}"
   uri:
-    url: "{{ products_uri }}/{{ product_slug }}"
+    url: "{{ products_uri }}/{{ product_slug | urlencode }}"
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     return_content: yes
@@ -13,7 +13,7 @@
 
 - name: "update product {{ product_slug }}"
   uri:
-    url: "{{ products_uri }}/{{ product_slug }}"
+    url: "{{ products_uri }}/{{ product_slug | urlencode }}"
     headers:
       Authorization: "Bearer {{ APIGEE_ACCESS_TOKEN }}"
     body_format: json
