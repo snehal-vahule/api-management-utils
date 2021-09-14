@@ -233,9 +233,9 @@ stages:
                     echo "##[debug]short_name: $SHORT_NAME"
                     echo "##[debug]guid: $GUID"
 
-                    if [[ "${parameters.short_name}" -ne $SHORT_NAME ]]; then
-                      echo "##[warning]Short name provided to pipeline (${{ parameters.short_name }}) does not match name in registry ($SHORT_NAME)"
-                      echo "##vso[task.logissue]warning Short name provided to pipeline (${{ parameters.short_name }}) does not match name in registry ($SHORT_NAME)"
+                    if [[ "${parameters.short_service_name}" -ne $SHORT_NAME ]]; then
+                      echo "##[warning]Short name provided to pipeline (${{ parameters.short_service_name }}) does not match name in registry ($SHORT_NAME)"
+                      echo "##vso[task.logissue]warning Short name provided to pipeline (${{ parameters.short_service_name }}) does not match name in registry ($SHORT_NAME)"
                     fi
                   displayName: Check supplied names against API registry
                   continueOnError: true
