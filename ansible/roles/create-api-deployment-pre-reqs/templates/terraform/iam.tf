@@ -252,6 +252,7 @@ data "aws_iam_policy_document" "deploy-user" {
 
     resources = concat(
       [local.ecs_cluster.arn],
+      [for ns in local.service_namespaces : "arn:aws:ecs:${local.region}:${local.account_id}:service/${ns}"],
       [for ns in local.service_namespaces : "arn:aws:ecs:${local.region}:${local.account_id}:service/apis-${var.apigee_environment}/${ns}"]
     )
   }
