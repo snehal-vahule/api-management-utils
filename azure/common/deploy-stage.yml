@@ -222,6 +222,24 @@ stages:
                     fi
                   displayName: Override SERVICE_BASE_PATH
 
+                - bash: |
+                    set -euo pipefail
+
+                    INFO=$(curl https://api-registry.ptl.api.platform.nhs.uk:9000/api/${{ parameters.service_name }})
+                    SHORT_NAME=$(echo $INFO | jq -r .short_name)
+                    GUID=$(echo $INFO | jq -r .guid)
+
+                    echo "##[debug]Fetched info from API Registry"
+                    echo "##[debug]short_name: $SHORT_NAME"
+                    echo "##[debug]guid: $GUID"
+
+                    if [[ $SHORT_NAME != "${{ parameters.short_service_name }}" ]]; then
+                      echo "##[warning]Short name provided to pipeline (${{ parameters.short_service_name }}) does not match name in registry ($SHORT_NAME)"
+                      echo "##vso[task.logissue type=warning]Short name provided to pipeline (${{ parameters.short_service_name }}) does not match name in registry ($SHORT_NAME)"
+                    fi
+                  displayName: Check supplied names against API registry
+                  continueOnError: true
+
                 - template: '../templates/deploy-service.yml'
                   parameters:
                     service_name: ${{ parameters.service_name }}
