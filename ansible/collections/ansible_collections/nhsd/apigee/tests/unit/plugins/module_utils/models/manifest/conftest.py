@@ -27,7 +27,6 @@ def invalid_guid():
 def mock_api_registry(monkeypatch):
     def _mock_api_registry_get(name: str):
         if name == CANARY_API["name"]:
-            print("HELLO")
             return CANARY_API
         else:
             raise ValueError(f"No API named {name} found.")
