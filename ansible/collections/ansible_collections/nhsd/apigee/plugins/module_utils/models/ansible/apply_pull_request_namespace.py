@@ -41,11 +41,14 @@ class ApplyPullRequestNamespace(pydantic.BaseModel):
         # here we want:
         # canary-api-internal-dev         -> canary-api-pr-1234
         # canary-api-internal-dev-sandbox -> canary-api-pr-1234-sandbox
+        # Canary API (Internal Development) -> [PR 1234] Canary API (Internal Development)
         old = "internal-dev"
         new = values["pull_request"]
+        display = new.replace('-', ' ').upper()
         for env in manifest.apigee.environments:
             for product in env.products:
                 product.name = product.name.replace(old, new, 1)
+                product.displayName = f"[{display}] {product.displayName}"
                 product.proxies = [
                     proxy.replace(old, new, 1)
                     if proxy.startswith(api_name)
