@@ -57,8 +57,7 @@ class ApplyPullRequestNamespace(pydantic.BaseModel):
                 ]
 
             for apidoc in env.apidocs:
-                apidoc.edgeAPIProductName = f"[{display}] {product.displayName}"
-                apidoc.title = apidoc.edgeAPIProductName
+                apidoc.title = f"[{display}] {product.displayName}"
 
             for spec in env.specs:
                 spec.name = spec.name.replace(old, new, 1)
