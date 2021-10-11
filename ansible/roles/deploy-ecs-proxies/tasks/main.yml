@@ -72,13 +72,13 @@
       when: item.state == 'file'
 
     - name: terraform plan
-      shell: "make -C {{ out_dir }}/terraform clean plan args='-no-color -out -lock-timeout=30m tfplan.out'" # noqa 305
+      shell: "make -C {{ out_dir }}/terraform clean plan args='-no-color -lock-timeout=30m -out tfplan.out'" # noqa 305
       register: tfplan
       failed_when: tfplan.rc not in (0, 2)
       when: not do_not_terraform
 
     - name: terraform apply
-      shell: "make -C {{ out_dir }}/terraform apply-plan args='-no-color --auto-approve -lock-timeout=30m tfplan.out'" # noqa 305
+      shell: "make -C {{ out_dir }}/terraform apply-plan args='-no-color -lock-timeout=30m --auto-approve tfplan.out'" # noqa 305
       register: tfapply
       when: not do_not_terraform
 
