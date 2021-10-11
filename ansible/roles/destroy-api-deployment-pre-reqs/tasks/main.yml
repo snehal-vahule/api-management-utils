@@ -42,7 +42,7 @@
       when: not do_not_terraform
 
     - name: terraform destroy
-      shell: "make -C {{ out_dir }}/terraform apply args='-no-color --auto-approve' tf-command=destroy" # noqa 305
+      shell: "make -C {{ out_dir }}/terraform apply args='-no-color -lock-timeout=30m --auto-approve' tf-command=destroy" # noqa 305
       register: tfapply
       when: not do_not_terraform
 
