@@ -13,7 +13,7 @@ parameters:
     displayName: Service Base Path
     type: string
   - name: proxy_path
-    displayName: Path to proxy directory from /proxies at the project root
+    displayName: Path to proxy directory from /proxies at the project root (set empty to skip proxy deployment)
     type: string
     default: live
   - name: deploy_review_sandbox
