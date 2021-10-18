@@ -36,11 +36,28 @@ parameters:
   - name: friendly_api_name
     default: ''
   - name: portal_api_requires_callback_url
-    type: boolean
   - name: make_spec_visible
-    type: boolean
+    # To mark a pipeline variable as deprecated, go to the
+    # apigee-deployment.yml and give it a default value of 'DEPRECATED'.
+    # Then add it to this list.
+  - name: _deprecated_pipeline_variables
+    type: object
+    default:
+      - product_display_name
+      - product_description
+      - make_spec_visible
+      - portal_api_requires_callback_url
+      - spec_file
 
 steps:
+  # Warn user they are passing deprecated variables to the deployment pipeline
+  - ${{ each variable_name in parameters._deprecated_pipeline_variables }}:
+    - ${{ if ne(parameters[variable_name], 'DEPRECATED') }}:
+      - bash: |
+          echo "##[warning]Pipeline parameter ${{ variable_name }} is deprecated"
+          echo "##[warning]The value that appears in Apigee is derived from your repository's manifest.yml/manifest_template.yml file."
+          echo "##[warning]To remove this warning stop passing the variable into the pipeline parameters."
+          echo "##vso[task.complete result=SucceededWithIssues;]DONE"
   - bash: |
       ls -R
       if [[ -f ecs-deploy-${{ parameters.apigee_environment }}.yml ]] || [[ -f ecs-proxies-deploy.yml ]] || [[ -f ecs-proxies-deploy-sandbox.yml ]]; then
