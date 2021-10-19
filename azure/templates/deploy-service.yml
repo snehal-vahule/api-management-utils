@@ -58,6 +58,7 @@ steps:
           echo "##[warning]The value that appears in Apigee is derived from your repository's manifest.yml/manifest_template.yml file."
           echo "##[warning]To remove this warning stop passing the variable into the pipeline parameters."
           echo "##vso[task.complete result=SucceededWithIssues;]DONE"
+        displayName: Warn ${{ variable_name }} is a deprecated pipeline parameter
   - bash: |
       ls -R
       if [[ -f ecs-deploy-${{ parameters.apigee_environment }}.yml ]] || [[ -f ecs-proxies-deploy.yml ]] || [[ -f ecs-proxies-deploy-sandbox.yml ]]; then
