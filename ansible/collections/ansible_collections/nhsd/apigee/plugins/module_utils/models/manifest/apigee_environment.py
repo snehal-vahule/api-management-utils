@@ -14,9 +14,9 @@ from ansible_collections.nhsd.apigee.plugins.module_utils.models.apigee.product 
 
 class ManifestApigeeEnvironment(pydantic.BaseModel):
     name: LITERAL_APIGEE_ENVIRONMENTS
-    products: typing.List[ApigeeProduct]
-    specs: typing.List[ApigeeSpec]
-    api_catalog: typing.List[ApigeeApidoc]
+    products: typing.List[ApigeeProduct] = []
+    specs: typing.List[ApigeeSpec] = []
+    api_catalog: typing.List[ApigeeApidoc] = []
 
     @pydantic.validator("products", "specs")
     def names_unique(cls, values):
